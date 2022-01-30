@@ -146,8 +146,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<username>trifang</username>
-					<password>qqqqq111</password>
 					<repository>trifang/order-service</repository>
 					<tag>${project.version}</tag>
 					<useMavenSettingsForAuth>true</useMavenSettingsForAuth>
