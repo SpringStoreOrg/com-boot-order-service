@@ -36,7 +36,7 @@ public class OrderService {
 
 		log.info("createNewOrder - process started");
 
-		Cart cart = CartMapper.dtoToCartEntity(cartServiceClient.callGetCartByUserName(email));
+		Cart cart = CartMapper.dtoToCartEntity(cartServiceClient.callGetCartByEmail(email));
 
 		Order order = new Order();
 
@@ -60,10 +60,10 @@ public class OrderService {
                 .setLastUpdatedOn(LocalDateTime.now());
 
 		orderRepository.save(order);
-		log.info("Order for User: {} saved!",email);
+		log.info("Order for User: {} saved!", email);
 
 		cartServiceClient.callDeleteCartByEmail(email);
-		log.info("Cart for User: {} deleted!",email);
+		log.info("Cart for User: {} deleted!", email);
 
 		producer.produce(order);
 

@@ -15,9 +15,9 @@ public class CartServiceClient {
 	@Autowired
 	private RestTemplate cartServiceRestTemplate;
 
-	public CartDTO callGetCartByUserName(String userName) {
+	public CartDTO callGetCartByEmail(String email) {
 
-		return cartServiceRestTemplate.getForEntity(Constants.GET_CART_BY_EMAIL + userName, CartDTO.class).getBody();
+		return cartServiceRestTemplate.getForEntity(Constants.GET_CART_BY_EMAIL, CartDTO.class, email).getBody();
 	}
 
 	public void callDeleteCartByEmail(String email) {
