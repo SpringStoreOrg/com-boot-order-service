@@ -27,31 +27,44 @@ public class OrderService {
 
 	@Autowired
 	private CartServiceClient cartServiceClient;
-		
+
 	@Autowired
 	private Producer producer;
 
 
-	public OrderDTO createNewOrder(String userName) {
+	public OrderDTO createNewOrder(OrderDTO orderDto ,String userName) {
 
 		log.info("createNewOrder - process started");
 
 		Cart cart = CartMapper.dtoToCartEntity(cartServiceClient.callGetCartByUserName(userName));
 
 		Order order = new Order();
-		order.setUuid(UUID.randomUUID());
-		order.setStatus(OrderStatus.IN_PROGRESS);
-		order.setProductList(cart.getProductList());
-		order.setUser(cart.getUser());
-		order.setTotal(cart.getTotal());
-		order.setLastUpdatedOn(LocalDateTime.now());
+
+        order.setUuid(UUID.randomUUID())
+                .setFirstName((orderDto.getFirstName()))
+                .setLastName((orderDto.getLastName()))
+                .setAddressLine1((orderDto.getAddressLine1()))
+                .setAddressLine2((orderDto.getAddressLine2()))
+                .setCity((orderDto.getCity()))
+                .setState((orderDto.getState()))
+                .setZipPostalCode((orderDto.getZipPostalCode()))
+                .setCountry((orderDto.getCountry()))
+                .setNameOnCard((orderDto.getNameOnCard()))
+                .setCardNumber((orderDto.getCardNumber()))
+                .setExpiryDate((orderDto.getExpiryDate()))
+                .setCvv((orderDto.getCvv()))
+                .setStatus(OrderStatus.IN_PROGRESS)
+                .setProductList(cart.getProductList())
+                .setUser(cart.getUser())
+                .setTotal(cart.getTotal())
+                .setLastUpdatedOn(LocalDateTime.now());
 
 		orderRepository.save(order);
-		log.info("Order for User: " + userName + " saved!");
+		log.info("Order for User: {} saved!",userName);
 
 		cartServiceClient.callDeleteCartByUserName(userName);
-		log.info("Cart for User: " + userName + " deleted!");
-		
+		log.info("Cart for User: {} deleted!",userName);
+
 		producer.produce(order);
 
 		return OrderMapper.orderEntityToDto(order);
