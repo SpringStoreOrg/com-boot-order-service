@@ -21,7 +21,7 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 
-	@PostMapping("/createNewOrder/{userName}")
+	@PostMapping("/createNewOrder")
 	public ResponseEntity<OrderDTO> createNewOrder(@RequestBody OrderDTO orderDto, @Email(message = "Invalid email!", regexp = Constants.EMAIL_REGEXP) @RequestParam String email) {
 		OrderDTO newOrder = orderService.createNewOrder(orderDto ,email);
 		return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
