@@ -18,12 +18,12 @@ public class CartServiceClient {
 
 	public CartDTO callGetCartByUserName(String userName) {
 
-		return restTemplate.getForEntity(Constants.GET_CART_BY_USER_NAME + userName, CartDTO.class).getBody();
+		return restTemplate.getForEntity(Constants.GET_CART_BY_EMAIL + userName, CartDTO.class).getBody();
 	}
 	
 	public void callDeleteCartByUserName(String userName) {
 
-		restTemplate.exchange(Constants.DELETE_CART_BY_USER_NAME + userName, HttpMethod.DELETE,
+		restTemplate.exchange(Constants.DELETE_CART_BY_EMAIL+ userName, HttpMethod.DELETE,
 				new HttpEntity<>(UserDTO.class), String.class);
 	}
 }
