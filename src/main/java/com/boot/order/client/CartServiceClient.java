@@ -13,17 +13,16 @@ public class CartServiceClient {
 
 
 	@Autowired
-	private RestTemplate restTemplate;
-
+	private RestTemplate cartServiceRestTemplate;
 
 	public CartDTO callGetCartByUserName(String userName) {
 
-		return restTemplate.getForEntity(Constants.GET_CART_BY_EMAIL + userName, CartDTO.class).getBody();
+		return cartServiceRestTemplate.getForEntity(Constants.GET_CART_BY_EMAIL + userName, CartDTO.class).getBody();
 	}
-	
-	public void callDeleteCartByUserName(String userName) {
 
-		restTemplate.exchange(Constants.DELETE_CART_BY_EMAIL+ userName, HttpMethod.DELETE,
-				new HttpEntity<>(UserDTO.class), String.class);
+	public void callDeleteCartByEmail(String email) {
+
+		cartServiceRestTemplate.exchange(Constants.DELETE_CART_BY_EMAIL, HttpMethod.DELETE,
+				new HttpEntity<>(UserDTO.class), String.class, email);
 	}
 }

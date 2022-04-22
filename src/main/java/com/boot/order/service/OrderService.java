@@ -62,7 +62,7 @@ public class OrderService {
 		orderRepository.save(order);
 		log.info("Order for User: {} saved!",email);
 
-		cartServiceClient.callDeleteCartByUserName(email);
+		cartServiceClient.callDeleteCartByEmail(email);
 		log.info("Cart for User: {} deleted!",email);
 
 		producer.produce(order);

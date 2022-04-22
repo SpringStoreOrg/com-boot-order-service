@@ -10,6 +10,7 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -25,40 +26,18 @@ import com.boot.order.rabbitmq.Producer;
 
 @Configuration
 public class AppConfig {
-    
-	@Bean
-	public RestTemplate template() {
-		return new RestTemplate();
-	}
 
-	@Bean
-	public CartServiceClient productServiceClient() {
-		return new CartServiceClient();
-	}
+    @Value("${cart.service.url}")
+    private String cartServiceUrl;
+
+    @Bean(name = "cartServiceRestTemplate")
+    public RestTemplate cartServiceRestTemplateUrl() {
+        return new RestTemplateBuilder().rootUri(cartServiceUrl).build();
+    }
 	
 	@Bean
 	public Producer producer() {
 		return new Producer();
-	}
-	
-	@Bean
-	public JavaMailSender getJavaMailSender() {
-		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-		mailSender.setHost("smtp.gmail.com");
-		mailSender.setPort(587);
-
-		mailSender.setUsername("testsurnametestname0@gmail.com");
-		mailSender.setPassword("qwerty123456&&&");
-
-        Properties javaMailProperties = new Properties();
-        javaMailProperties.put("mail.smtp.starttls.enable", "true");
-        javaMailProperties.put("mail.smtp.auth", "true");
-        javaMailProperties.put("mail.transport.protocol", "smtp");
-        javaMailProperties.put("mail.debug", "true");
- 
-        mailSender.setJavaMailProperties(javaMailProperties);
-
-		return mailSender;
 	}
 
     @Bean
