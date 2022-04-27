@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,6 +18,7 @@ import com.boot.services.model.Email;
 import com.boot.services.model.Order;
 import com.boot.services.model.User;
 
+@Slf4j
 @Service
 public class EmailService {
 
@@ -33,12 +35,6 @@ public class EmailService {
 		Email email = new Email();
 		User user = order.getUser();
 
-		email.setEmailFrom("springStore@noreply.com");
-		email.setEmailTo(user.getEmail());
-		email.setEmailSubject("SpringStore confirmation Email");
-		
-		
-
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("uuid", order.getUuid());
 		model.put("products", order.getProductList());
@@ -50,14 +46,13 @@ public class EmailService {
 
 		MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
 
-		mimeMessageHelper.setSubject(email.getEmailSubject());
-		mimeMessageHelper.setFrom(email.getEmailFrom());
-		mimeMessageHelper.setTo(email.getEmailTo());
+		mimeMessageHelper.setSubject("SpringStore confirmation Email");
+		mimeMessageHelper.setFrom("noreply@springwebstore.com");
+		mimeMessageHelper.setTo(user.getEmail());
 		email.setEmailContent(getContentFromTemplate(email.getModel(), ORDER_EMAIL_TEMPLATE));
 		mimeMessageHelper.setText(email.getEmailContent(), true);
 
 		emailSender.send(mimeMessageHelper.getMimeMessage());
-
 	}
 
 	public String getContentFromTemplate(Map<String, Object> model, String templatePath) {
@@ -65,7 +60,7 @@ public class EmailService {
 		try {
 			content.append(VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, templatePath, model));
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.info("Exception by getting content from the email template: {}", e.getStackTrace());
 		}
 		return content.toString();
 	}
