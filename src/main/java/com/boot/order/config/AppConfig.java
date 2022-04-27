@@ -35,11 +35,6 @@ public class AppConfig {
         return new RestTemplateBuilder().rootUri(cartServiceUrl).build();
     }
 
-    @Bean
-    public CartServiceClient cartServiceClient() {
-        return new CartServiceClient();
-    }
-	
 	@Bean
 	public Producer producer() {
 		return new Producer();
