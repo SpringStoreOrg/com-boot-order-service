@@ -102,7 +102,7 @@
 		<dependency>
 			<groupId>com.github.GeorgeT88</groupId>
 			<artifactId>commons-datamodel-dto</artifactId>
-			<version>release-1.7</version>
+			<version>release-1.9</version>
 		</dependency>
 
 		<!-- email -->
