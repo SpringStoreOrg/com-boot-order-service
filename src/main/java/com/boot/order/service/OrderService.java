@@ -39,7 +39,7 @@ public class OrderService {
 		Cart cart = CartMapper.dtoToCartEntity(cartServiceClient.callGetCartByEmail(email));
 
 		Order order = new Order();
-
+        //TODO add validation for not null cart
         order.setUuid(UUID.randomUUID())
                 .setFirstName((orderDto.getFirstName()))
                 .setLastName((orderDto.getLastName()))
@@ -49,10 +49,10 @@ public class OrderService {
                 .setState((orderDto.getState()))
                 .setZipPostalCode((orderDto.getZipPostalCode()))
                 .setCountry((orderDto.getCountry()))
-                .setNameOnCard((orderDto.getNameOnCard()))
-                .setCardNumber((orderDto.getCardNumber()))
-                .setExpiryDate((orderDto.getExpiryDate()))
-                .setCvv((orderDto.getCvv()))
+                .setNameOnCard(("TestCardName"))
+                .setCardNumber((12312123123123L))
+                .setExpiryDate((LocalDateTime.now()))
+                .setCvv((123))
                 .setStatus(OrderStatus.IN_PROGRESS)
                 .setProductList(cart.getProductList())
                 .setUser(cart.getUser())
