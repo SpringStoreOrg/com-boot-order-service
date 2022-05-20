@@ -21,8 +21,8 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 
-	//TODO a better endpoint would be /order. POST to /order means order creation
-	@PostMapping("/createNewOrder")
+	@PostMapping
+	@ResponseBody
 	public ResponseEntity<OrderDTO> createNewOrder(@RequestBody OrderDTO orderDto, @Email(message = "Invalid email!", regexp = Constants.EMAIL_REGEXP) @RequestParam String email) {
 		OrderDTO newOrder = orderService.createNewOrder(orderDto ,email);
 		return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
