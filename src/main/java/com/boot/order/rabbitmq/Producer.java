@@ -1,10 +1,10 @@
 package com.boot.order.rabbitmq;
 
+import com.boot.order.model.Order;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.boot.services.model.Order;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -3,13 +3,13 @@ package com.boot.order.rabbitmq;
 
 import javax.mail.MessagingException;
 
+import com.boot.order.model.Order;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.boot.order.service.EmailService;
-import com.boot.services.model.Order;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +28,7 @@ public class Consumer {
 	public void receive(Order order) {
 		try {
 			emailService.sendOrderEmail(order);
-			log.info("Email succesfully send to following Email: " + order.getUser().getEmail());
+			log.info("Email succesfully send to following Email: " + order.getEmail());
 		} catch (MessagingException e) {
 			log.warn("Unable to send Email: " + e);
 		} catch (Exception e) {
