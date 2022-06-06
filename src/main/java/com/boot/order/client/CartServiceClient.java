@@ -1,20 +1,20 @@
 package com.boot.order.client;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.boot.order.dto.CartDTO;
+import com.boot.order.dto.UserDTO;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.boot.order.util.Constants;
-import com.boot.services.dto.CartDTO;
-import com.boot.services.dto.UserDTO;
+
 
 @Component
+@AllArgsConstructor
 public class CartServiceClient {
 
-
-	@Autowired
 	private RestTemplate cartServiceRestTemplate;
 
 	public CartDTO callGetCartByEmail(String email) {

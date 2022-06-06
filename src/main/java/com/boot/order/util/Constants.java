@@ -2,7 +2,7 @@ package com.boot.order.util;
 
 public class Constants {
 
-	public static final String GET_CART_BY_EMAIL = "/?email={email}";
+	public static final String GET_CART_BY_EMAIL = "/{email}";
 	public static final String DELETE_CART_BY_EMAIL = "/?email={email}";
 
 	//Regular expression used for email validation

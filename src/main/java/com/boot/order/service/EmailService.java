@@ -6,6 +6,9 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import com.boot.order.dto.UserDTO;
+import com.boot.order.model.Email;
+import com.boot.order.model.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +17,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.velocity.VelocityEngineUtils;
 
-import com.boot.services.model.Email;
-import com.boot.services.model.Order;
-import com.boot.services.model.User;
+
 
 @Slf4j
 @Service
@@ -33,13 +34,13 @@ public class EmailService {
 	public void sendOrderEmail(Order order) throws MessagingException {
 
 		Email email = new Email();
-		User user = order.getUser();
+
 
 		Map<String, Object> model = new HashMap<String, Object>();
 		model.put("uuid", order.getUuid());
-		model.put("products", order.getProductList());
+		model.put("products", order.getEntries());
 		model.put("total", order.getTotal());
-		model.put("adress", order.getUser().getDeliveryAddress());
+		model.put("adress", order.getAddressLine1());
 		email.setModel(model);
 
 		MimeMessage mimeMessage = emailSender.createMimeMessage();
@@ -48,7 +49,7 @@ public class EmailService {
 
 		mimeMessageHelper.setSubject("SpringStore confirmation Email");
 		mimeMessageHelper.setFrom("noreply@springwebstore.com");
-		mimeMessageHelper.setTo(user.getEmail());
+		mimeMessageHelper.setTo(order.getEmail());
 		email.setEmailContent(getContentFromTemplate(email.getModel(), ORDER_EMAIL_TEMPLATE));
 		mimeMessageHelper.setText(email.getEmailContent(), true);
 
