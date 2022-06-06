@@ -13,7 +13,6 @@ import com.boot.order.exception.EntityNotFoundException;
 import com.boot.order.model.Order;
 import com.boot.order.model.OrderEntry;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.boot.order.client.CartServiceClient;
@@ -22,6 +21,7 @@ import com.boot.order.repository.OrderRepository;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import static com.boot.order.model.Order.orderEntityToDto;
 
@@ -36,7 +36,7 @@ public class OrderService {
 
 	private Producer producer;
 
-
+    @Transactional
 	public OrderDTO createNewOrder(OrderDTO orderDto , String email) throws EntityNotFoundException {
 
 		log.info("createNewOrder - process started");
@@ -44,10 +44,6 @@ public class OrderService {
 		CartDTO cart = cartServiceClient.callGetCartByEmail(email);
 
 		if (cart != null) {
-
-
-
-
 
 			Order order = new Order();
 			order.setUuid(UUID.randomUUID())
