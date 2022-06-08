@@ -66,6 +66,7 @@ public class OrderService {
 				OrderEntry orderEntry = new OrderEntry();
 
 				orderEntry.setProductName(cartEntry.getProductName());
+				orderEntry.setPrice(cartEntry.getPrice());
 				orderEntry.setQuantity(cartEntry.getQuantity());
 				orderEntry.setOrder(order);
 
