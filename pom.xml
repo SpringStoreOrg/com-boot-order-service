@@ -21,14 +21,6 @@
 		<spring-cloud.version>2021.0.4</spring-cloud.version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-		</repository>
-	</repositories>
-
-
 	<dependencies>
 		<!-- Spring dependencies -->
 		<dependency>
@@ -61,12 +53,17 @@
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
 
-		<!--
+		<!-- liquibase -->
 		<dependency>
-            <groupId>org.springframework.cloud</groupId>
-             <artifactId>spring-cloud-sleuth-zipkin</artifactId>
-        </dependency> -->
-
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-core</artifactId>
+			<version>4.17.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.liquibase</groupId>
+			<artifactId>liquibase-maven-plugin</artifactId>
+			<version>4.17.2</version>
+		</dependency>
         <!-- lombock -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -79,11 +76,12 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.8.2</version>
 			<scope>test</scope>
-			<version>4.13.2</version>
 		</dependency>
 
 		<!-- MySQL -->

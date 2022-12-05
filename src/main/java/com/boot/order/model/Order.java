@@ -58,7 +58,7 @@ public class Order implements Serializable {
 	@Column(unique = true)
 	private UUID uuid;
 	
-	@Column
+	@Enumerated(EnumType.STRING)
 	private OrderStatus status;
 
 	@Column
