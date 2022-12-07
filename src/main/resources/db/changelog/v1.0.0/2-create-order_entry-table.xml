@@ -34,5 +34,14 @@
             </column>
         </createTable>
 
+        <addForeignKeyConstraint
+                baseTableSchemaName="order"
+                baseTableName="order_entry"
+                baseColumnNames="order_id"
+                constraintName="order_entry_f1"
+                referencedTableSchemaName="order"
+                referencedTableName="order"
+                referencedColumnNames="id"/>
+
     </changeSet>
 </databaseChangeLog>
