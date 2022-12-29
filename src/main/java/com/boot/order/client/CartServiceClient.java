@@ -1,14 +1,15 @@
 package com.boot.order.client;
 
 import com.boot.order.dto.CartDTO;
-import com.boot.order.dto.UserDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.boot.order.util.Constants;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Component
@@ -17,14 +18,22 @@ public class CartServiceClient {
 
 	private RestTemplate cartServiceRestTemplate;
 
-	public CartDTO callGetCartByEmail(String email) {
+	public CartDTO callGetCartByUserId(long userId) {
 
-		return cartServiceRestTemplate.getForEntity(Constants.GET_CART_BY_EMAIL, CartDTO.class, email).getBody();
+		return cartServiceRestTemplate.exchange("/", HttpMethod.GET, new HttpEntity<Object>(getRequestHeaders(userId)), CartDTO.class)
+				.getBody();
 	}
 
-	public void callDeleteCartByEmail(String email) {
+	public void callDeleteCartByUserId(long userId) {
 
-		cartServiceRestTemplate.exchange(Constants.DELETE_CART_BY_EMAIL, HttpMethod.DELETE,
-				new HttpEntity<>(UserDTO.class), String.class, email);
+		cartServiceRestTemplate.exchange("/", HttpMethod.DELETE,
+				new HttpEntity<>(getRequestHeaders(userId)), String.class);
+	}
+
+	private Map<String, String> getRequestHeaders(long userId){
+		Map<String, String> headers = new HashMap<>();
+		headers.put("User-Id", String.valueOf(userId));
+
+		return headers;
 	}
 }
