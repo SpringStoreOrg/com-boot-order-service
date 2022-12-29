@@ -9,11 +9,11 @@
 
         <preConditions onFail="HALT">
             <not>
-                <tableExists schemaName="order" tableName="order_entry"/>
+                <tableExists tableName="order_entry"/>
             </not>
         </preConditions>
 
-        <createTable schemaName="order" tableName="order_entry">
+        <createTable tableName="order_entry">
             <column name="id" type="bigint" autoIncrement="true" >
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -35,11 +35,9 @@
         </createTable>
 
         <addForeignKeyConstraint
-                baseTableSchemaName="order"
                 baseTableName="order_entry"
                 baseColumnNames="order_id"
                 constraintName="order_entry_f1"
-                referencedTableSchemaName="order"
                 referencedTableName="order"
                 referencedColumnNames="id"/>
 
