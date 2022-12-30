@@ -1,12 +1,12 @@
 package com.boot.order.model;
 
-import com.boot.order.dto.OrderDTO;
 import com.boot.order.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,7 +18,7 @@ import java.util.UUID;
 @Data
 @Accessors(chain = true)
 @Entity
-@Table(name = "orders")
+@Table(name = "order")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
 public class Order implements Serializable {
 
@@ -56,6 +56,7 @@ public class Order implements Serializable {
 	private String country;
 
 	@Column(unique = true)
+	@Type(type = "uuid-char")
 	private UUID uuid;
 	
 	@Enumerated(EnumType.STRING)
@@ -77,33 +78,5 @@ public class Order implements Serializable {
 	@PreUpdate
 	protected void lastUpdatedOnPreUpdate() {
 		this.lastUpdatedOn =  LocalDateTime.now();
-	}
-
-	public static OrderDTO orderEntityToDto(Order order) {
-		return new OrderDTO()
-				.setUuid(order.getUuid())
-				.setFirstName((order.getFirstName()))
-				.setLastName((order.getLastName()))
-				.setAddressLine1((order.getAddressLine1()))
-				.setAddressLine2((order.getAddressLine2()))
-				.setCity((order.getCity()))
-				.setState((order.getState()))
-				.setZipPostalCode((order.getZipPostalCode()))
-				.setCountry((order.getCountry()))
-				.setEntries(order.getEntries());
-	}
-
-	public static Order dtoToOrderEntity(OrderDTO orderDto) {
-		return new Order()
-				.setUuid(orderDto.getUuid())
-				.setFirstName((orderDto.getFirstName()))
-				.setLastName((orderDto.getLastName()))
-				.setAddressLine1((orderDto.getAddressLine1()))
-				.setAddressLine2((orderDto.getAddressLine2()))
-				.setCity((orderDto.getCity()))
-				.setState((orderDto.getState()))
-				.setZipPostalCode((orderDto.getZipPostalCode()))
-				.setCountry((orderDto.getCountry()));
-
 	}
 }
