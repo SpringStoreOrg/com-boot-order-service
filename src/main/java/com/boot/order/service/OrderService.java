@@ -37,11 +37,11 @@ public class OrderService {
 	private Producer producer;
 
     @Transactional
-	public OrderDTO createNewOrder(OrderDTO orderDto , String email) throws EntityNotFoundException {
+	public OrderDTO createNewOrder(OrderDTO orderDto , String email, long userId) throws EntityNotFoundException {
 
 		log.info("createNewOrder - process started");
 
-		CartDTO cart = cartServiceClient.callGetCartByEmail(email);
+		CartDTO cart = cartServiceClient.callGetCartByUserId(userId);
 
 		if (cart != null) {
 
@@ -79,7 +79,7 @@ public class OrderService {
 			orderRepository.save(order);
 			log.info("Order for User: {} saved!", email);
 
-			cartServiceClient.callDeleteCartByEmail(email);
+			cartServiceClient.callDeleteCartByUserId(userId);
 			log.info("Cart for User: {} deleted!", email);
 
 			producer.produce(order);

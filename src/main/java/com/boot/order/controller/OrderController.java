@@ -25,8 +25,10 @@ public class OrderController {
 
 	@PostMapping
 	@ResponseBody
-	public ResponseEntity<OrderDTO> createNewOrder(@RequestBody OrderDTO orderDto, @Email(message = "Invalid email!", regexp = Constants.EMAIL_REGEXP) @RequestParam String email) throws EntityNotFoundException {
-		OrderDTO newOrder = orderService.createNewOrder(orderDto ,email);
+	public ResponseEntity<OrderDTO> createNewOrder(@RequestBody OrderDTO orderDto,
+												   @RequestHeader(value = "Username") @Email(message = "Invalid email!", regexp = Constants.EMAIL_REGEXP) String email,
+												   @RequestHeader(value = "User-Id") long userId) throws EntityNotFoundException {
+		OrderDTO newOrder = orderService.createNewOrder(orderDto ,email, userId);
 		return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
 	}
 
