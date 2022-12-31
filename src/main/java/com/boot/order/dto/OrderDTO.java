@@ -1,12 +1,11 @@
 package com.boot.order.dto;
 
-import com.boot.order.model.OrderEntry;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +13,7 @@ import java.util.UUID;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderDTO {
 
 	private UUID uuid;
@@ -34,5 +34,5 @@ public class OrderDTO {
 
 	private String country;
 
-	private List<OrderEntry> entries;
+	private List<OrderEntryDTO> entries;
 }

@@ -1,92 +1,87 @@
 package com.boot.order.service;
 
+import com.boot.order.client.CartServiceClient;
+import com.boot.order.dto.OrderDTO;
+import com.boot.order.dto.OrderEntryDTO;
+import com.boot.order.enums.OrderStatus;
+import com.boot.order.model.Order;
+import com.boot.order.model.OrderEntry;
+import com.boot.order.rabbitmq.Producer;
+import com.boot.order.repository.OrderRepository;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import com.boot.order.dto.CartDTO;
-import com.boot.order.dto.CartEntryDTO;
-import com.boot.order.dto.OrderDTO;
-import com.boot.order.enums.OrderStatus;
-import com.boot.order.exception.EntityNotFoundException;
-import com.boot.order.model.Order;
-import com.boot.order.model.OrderEntry;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import com.boot.order.client.CartServiceClient;
-import com.boot.order.rabbitmq.Producer;
-import com.boot.order.repository.OrderRepository;
-
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
-
-import static com.boot.order.model.Order.orderEntityToDto;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public class OrderService {
 
-	private OrderRepository orderRepository;
+    private OrderRepository orderRepository;
 
-	private CartServiceClient cartServiceClient;
+    private CartServiceClient cartServiceClient;
 
-	private Producer producer;
+    private Producer producer;
+
+    private static final ModelMapper MAPPER = new ModelMapper();
+
+    static{
+        MAPPER.typeMap(OrderEntry.class, OrderDTO.class);
+    }
 
     @Transactional
-	public OrderDTO createNewOrder(OrderDTO orderDto , String email, long userId) throws EntityNotFoundException {
+    public OrderDTO createNewOrder(OrderDTO orderDto, String email, long userId){
+    	log.info("createNewOrder - process started");
 
-		log.info("createNewOrder - process started");
+        Order order = new Order();
+        order.setUuid(UUID.randomUUID())
+                .setEmail(email)
+                .setFirstName((orderDto.getFirstName()))
+                .setLastName((orderDto.getLastName()))
+                .setAddressLine1((orderDto.getAddressLine1()))
+                .setAddressLine2((orderDto.getAddressLine2()))
+                .setCity((orderDto.getCity()))
+                .setState((orderDto.getState()))
+                .setZipPostalCode((orderDto.getZipPostalCode()))
+                .setCountry((orderDto.getCountry()))
+                .setStatus(OrderStatus.IN_PROGRESS)
+                .setLastUpdatedOn(LocalDateTime.now());
 
-		CartDTO cart = cartServiceClient.callGetCartByUserId(userId);
+        List<OrderEntry> newOrderEntries = new ArrayList<>();
 
-		if (cart != null) {
+        double orderTotal = 0;
 
-			Order order = new Order();
-			order.setUuid(UUID.randomUUID())
-					.setEmail(email)
-					.setFirstName((orderDto.getFirstName()))
-					.setLastName((orderDto.getLastName()))
-					.setAddressLine1((orderDto.getAddressLine1()))
-					.setAddressLine2((orderDto.getAddressLine2()))
-					.setCity((orderDto.getCity()))
-					.setState((orderDto.getState()))
-					.setZipPostalCode((orderDto.getZipPostalCode()))
-					.setCountry((orderDto.getCountry()))
-					.setStatus(OrderStatus.IN_PROGRESS)
-					.setTotal(cart.getTotal())
-					.setLastUpdatedOn(LocalDateTime.now());
+        for (OrderEntryDTO entry : orderDto.getEntries()) {
+            OrderEntry orderEntry = new OrderEntry();
 
-			List<OrderEntry> newOrderEntries = new ArrayList<>();
+            orderEntry.setProductName(entry.getProductName());
+            orderEntry.setPrice(entry.getPrice());
+            orderEntry.setQuantity(entry.getQuantity());
+            orderEntry.setOrder(order);
 
-			for (CartEntryDTO cartEntry : cart.getEntries()) {
-				OrderEntry orderEntry = new OrderEntry();
+            orderTotal += entry.getPrice() * entry.getQuantity();
 
-				orderEntry.setProductName(cartEntry.getProductName());
-				orderEntry.setPrice(cartEntry.getPrice());
-				orderEntry.setQuantity(cartEntry.getQuantity());
-				orderEntry.setOrder(order);
+            newOrderEntries.add(orderEntry);
+        }
 
-				newOrderEntries.add(orderEntry);
-			}
+        order.setEntries(newOrderEntries);
+        order.setTotal(orderTotal);
 
-			order.setEntries(newOrderEntries);
+        orderRepository.save(order);
+        log.info("Order for User: {} saved!", email);
 
+        cartServiceClient.callDeleteCartByUserId(userId);
+        log.info("Cart for User: {} deleted!", email);
 
-			orderRepository.save(order);
-			log.info("Order for User: {} saved!", email);
+        producer.produce(order);
 
-			cartServiceClient.callDeleteCartByUserId(userId);
-			log.info("Cart for User: {} deleted!", email);
-
-			producer.produce(order);
-
-			return orderEntityToDto(order);
-		} else {
-			throw new EntityNotFoundException("Cart not found in the Database!");
-		}
-	}
+        return MAPPER.map(order, OrderDTO.class);
+    }
 }
