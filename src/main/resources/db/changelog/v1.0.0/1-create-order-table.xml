@@ -25,22 +25,22 @@
             <column name="address_line2" type="varchar(150)">
                 <constraints nullable="false"/>
             </column>
-            <column name="city" type="varchar(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="country" type="varchar(50)">
+            <column name="city" type="varchar(25)">
                 <constraints nullable="false"/>
             </column>
-            <column name="zip_postal_code" type="bigint">
+            <column name="country" type="varchar(25)">
                 <constraints nullable="false"/>
             </column>
-            <column name="email" type="varchar(50)">
+            <column name="zip_postal_code" type="varchar(10)">
                 <constraints nullable="false"/>
             </column>
-            <column name="first_name" type="varchar(35)">
+            <column name="email" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_name" type="varchar(35)">
+            <column name="first_name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="last_updated_on" type="datetime"/>
