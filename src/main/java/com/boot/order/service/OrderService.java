@@ -3,10 +3,9 @@ package com.boot.order.service;
 import com.boot.order.client.CartServiceClient;
 import com.boot.order.dto.OrderDTO;
 import com.boot.order.dto.OrderEntryDTO;
-import com.boot.order.enums.OrderStatus;
+import com.boot.order.model.OrderStatus;
 import com.boot.order.model.Order;
 import com.boot.order.model.OrderEntry;
-import com.boot.order.rabbitmq.Producer;
 import com.boot.order.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +27,6 @@ public class OrderService {
 
     private CartServiceClient cartServiceClient;
 
-    private Producer producer;
-
     private static final ModelMapper MAPPER = new ModelMapper();
 
     static{
@@ -40,6 +37,7 @@ public class OrderService {
     public OrderDTO createNewOrder(OrderDTO orderDto, String email, long userId){
     	log.info("createNewOrder - process started");
 
+    	//batch buy based on orderDTO
         Order order = new Order();
         order.setUuid(UUID.randomUUID())
                 .setEmail(email)
@@ -51,7 +49,7 @@ public class OrderService {
                 .setState((orderDto.getState()))
                 .setZipPostalCode((orderDto.getZipPostalCode()))
                 .setCountry((orderDto.getCountry()))
-                .setStatus(OrderStatus.IN_PROGRESS)
+                .setStatus(OrderStatus.RECEIVED)
                 .setLastUpdatedOn(LocalDateTime.now());
 
         List<OrderEntry> newOrderEntries = new ArrayList<>();
@@ -79,8 +77,6 @@ public class OrderService {
 
         cartServiceClient.callDeleteCartByUserId(userId);
         log.info("Cart for User: {} deleted!", email);
-
-        producer.produce(order);
 
         return MAPPER.map(order, OrderDTO.class);
     }

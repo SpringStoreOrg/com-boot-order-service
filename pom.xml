@@ -90,10 +90,26 @@
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 
-		<!-- RabbitMQ -->
+<!--		<dependency>-->
+<!--			<groupId>io.eventuate.tram.sagas</groupId>-->
+<!--			<artifactId>eventuate-tram-sagas-spring-orchestration</artifactId>-->
+<!--			<version>0.20.0.RELEASE</version>-->
+<!--		</dependency>-->
+
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-amqp</artifactId>
+			<groupId>io.eventuate.tram.core</groupId>
+			<artifactId>eventuate-tram-spring-optimistic-locking</artifactId>
+			<version>0.31.0.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>io.eventuate.tram.sagas</groupId>
+			<artifactId>eventuate-tram-sagas-orchestration-simple-dsl</artifactId>
+			<version>0.20.0.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>io.eventuate.tram.sagas</groupId>
+			<artifactId>eventuate-tram-sagas-spring-orchestration-simple-dsl-starter</artifactId>
+			<version>0.20.0.RELEASE</version>
 		</dependency>
 
 		<!-- email -->

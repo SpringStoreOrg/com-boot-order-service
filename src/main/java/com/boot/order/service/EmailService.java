@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import com.boot.order.dto.UserDTO;
 import com.boot.order.model.Email;
 import com.boot.order.model.Order;
 import lombok.extern.slf4j.Slf4j;
