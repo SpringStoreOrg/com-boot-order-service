@@ -2,7 +2,9 @@ package com.boot.order.service;
 
 import com.boot.order.client.CartServiceClient;
 import com.boot.order.dto.OrderDTO;
+import com.boot.order.dto.OrderDetails;
 import com.boot.order.dto.OrderEntryDTO;
+import com.boot.order.dto.RejectionReason;
 import com.boot.order.model.OrderStatus;
 import com.boot.order.model.Order;
 import com.boot.order.model.OrderEntry;
@@ -31,6 +33,74 @@ public class OrderService {
 
     static{
         MAPPER.typeMap(OrderEntry.class, OrderDTO.class);
+    }
+
+    @Transactional
+    public Order createOrder(OrderDetails orderDetails){
+        log.info("createNewOrder - process started");
+
+        Order order = new Order();
+        OrderDTO orderDTO = orderDetails.getOrderDTO();
+        order.setUuid(UUID.randomUUID())
+                .setEmail(orderDetails.getUserEmail())
+                .setFirstName((orderDTO.getFirstName()))
+                .setLastName((orderDTO.getLastName()))
+                .setAddressLine1((orderDTO.getAddressLine1()))
+                .setAddressLine2((orderDTO.getAddressLine2()))
+                .setCity((orderDTO.getCity()))
+                .setState((orderDTO.getState()))
+                .setZipPostalCode((orderDTO.getZipPostalCode()))
+                .setCountry((orderDTO.getCountry()))
+                .setStatus(OrderStatus.RECEIVED)
+                .setLastUpdatedOn(LocalDateTime.now());
+
+        List<OrderEntry> newOrderEntries = new ArrayList<>();
+
+        double orderTotal = 0;
+
+        for (OrderEntryDTO entry : orderDTO.getEntries()) {
+            OrderEntry orderEntry = new OrderEntry();
+
+            orderEntry.setProductName(entry.getProductName());
+            orderEntry.setPrice(entry.getPrice());
+            orderEntry.setQuantity(entry.getQuantity());
+            orderEntry.setOrder(order);
+
+            orderTotal += entry.getPrice() * entry.getQuantity();
+
+            newOrderEntries.add(orderEntry);
+        }
+
+        order.setEntries(newOrderEntries);
+        order.setTotal(orderTotal);
+
+        orderRepository.save(order);
+        log.info("Order for User: {} saved!", orderDetails.getUserEmail());
+
+        return order;
+    }
+
+    @Transactional
+    public Order rejectOrder(Long orderId, RejectionReason rejectionReason){
+        Order order = orderRepository.getReferenceById(orderId);
+        order.reject(rejectionReason);
+
+        return order;
+    }
+
+    @Transactional
+    public Order approveOrder(Long orderId){
+        Order order = orderRepository.getReferenceById(orderId);
+        order.approve();
+
+        return order;
+    }
+
+    @Transactional
+    public OrderDTO getOrderById(Long orderId){
+        return orderRepository.findById(orderId)
+                .map(value -> MAPPER.map(value, OrderDTO.class))
+                .orElse(null);
     }
 
     @Transactional

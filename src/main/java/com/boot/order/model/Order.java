@@ -1,5 +1,6 @@
 package com.boot.order.model;
 
+import com.boot.order.dto.RejectionReason;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -61,6 +62,9 @@ public class Order implements Serializable {
 	@Enumerated(EnumType.STRING)
 	private OrderStatus status;
 
+	@Enumerated(EnumType.STRING)
+	private RejectionReason rejectionReason;
+
 	@Column
 	private double total;
 
@@ -77,5 +81,14 @@ public class Order implements Serializable {
 	@PreUpdate
 	protected void lastUpdatedOnPreUpdate() {
 		this.lastUpdatedOn =  LocalDateTime.now();
+	}
+
+	public void approve() {
+		this.status = OrderStatus.IN_PROGRESS;
+	}
+
+	public void reject(RejectionReason rejectionReason) {
+		this.status = OrderStatus.REJECTED;
+		this.rejectionReason = rejectionReason;
 	}
 }

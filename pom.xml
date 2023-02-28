@@ -96,6 +96,12 @@
 <!--			<version>0.20.0.RELEASE</version>-->
 <!--		</dependency>-->
 
+		<!-- RabbitMQ -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>io.eventuate.tram.core</groupId>
 			<artifactId>eventuate-tram-spring-optimistic-locking</artifactId>
@@ -110,6 +116,11 @@
 			<groupId>io.eventuate.tram.sagas</groupId>
 			<artifactId>eventuate-tram-sagas-spring-orchestration-simple-dsl-starter</artifactId>
 			<version>0.20.0.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>io.eventuate.tram.core</groupId>
+			<artifactId>eventuate-tram-jdbc-rabbitmq</artifactId>
+			<version>0.27.0.RELEASE</version>
 		</dependency>
 
 		<!-- email -->

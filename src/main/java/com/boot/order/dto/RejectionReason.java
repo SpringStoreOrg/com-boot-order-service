@@ -1,3 +1,3 @@
 package com.boot.order.dto;
 
-public enum RejectionReason { INSUFFICIENT_CREDIT, UNKNOWN_CUSTOMER}
+public enum RejectionReason { INSUFFICIENT_PRODUCTS}
