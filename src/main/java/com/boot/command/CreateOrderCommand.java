@@ -1,7 +1,6 @@
 package com.boot.command;
 
 import com.boot.order.dto.OrderEntryDTO;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,12 +11,20 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
 @Accessors(chain = true)
-public class ReserveProductsCommand{
+@Builder
+public class CreateOrderCommand {
     @TargetAggregateIdentifier
     private UUID orderId;
     private String email;
     private long userId;
+    private String firstName;
+    private String lastName;
+    private String addressLine1;
+    private String addressLine2;
+    private String city;
+    private String state;
+    private String zipPostalCode;
+    private String country;
     private List<OrderEntryDTO> entries;
 }

@@ -45,6 +45,17 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>31.1-jre</version>
 		</dependency>
 
 		<!-- logging -->
@@ -103,24 +114,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>io.eventuate.tram.core</groupId>
-			<artifactId>eventuate-tram-spring-optimistic-locking</artifactId>
-			<version>0.31.0.RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>io.eventuate.tram.sagas</groupId>
-			<artifactId>eventuate-tram-sagas-orchestration-simple-dsl</artifactId>
-			<version>0.20.0.RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>io.eventuate.tram.sagas</groupId>
-			<artifactId>eventuate-tram-sagas-spring-orchestration-simple-dsl-starter</artifactId>
-			<version>0.20.0.RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>io.eventuate.tram.core</groupId>
-			<artifactId>eventuate-tram-jdbc-rabbitmq</artifactId>
-			<version>0.27.0.RELEASE</version>
+			<groupId>org.axonframework</groupId>
+			<artifactId>axon-spring-boot-starter</artifactId>
+			<version>4.7.2</version>
 		</dependency>
 
 		<!-- email -->

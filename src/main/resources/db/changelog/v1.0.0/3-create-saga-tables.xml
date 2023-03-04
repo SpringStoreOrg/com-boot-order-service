@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+    <changeSet author="FlorinV" id="2023-03-03-22.00">
+        <preConditions onFail="HALT">
+            <not>
+                <tableExists tableName="association_value_entry"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="association_value_entry">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="association_key" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="association_value" type="varchar(255)">
+            </column>
+            <column name="saga_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="saga_type" type="varchar(255)">
+            </column>
+        </createTable>
+
+        <createIndex indexName="association_ve_idx1"
+                     tableName="association_value_entry">
+            <column name="saga_type" type="varchar(255)"/>
+            <column name="association_key" type="varchar(255)"/>
+            <column name="association_value" type="varchar(255)"/>
+        </createIndex>
+
+        <createIndex indexName="association_ve_idx2"
+                     tableName="association_value_entry">
+            <column name="saga_type" type="varchar(255)"/>
+            <column name="saga_id" type="varchar(255)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="FlorinV" id="2023-03-03-22.10">
+        <preConditions onFail="HALT">
+            <not>
+                <tableExists tableName="saga_entry"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="saga_entry">
+            <column name="saga_id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="revision" type="varchar(255)">
+            </column>
+            <column name="saga_type" type="varchar(255)">
+            </column>
+            <column name="serialized_saga" type="int">
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="FlorinV" id="2023-03-03-22.20">
+        <preConditions onFail="HALT">
+            <not>
+                <tableExists tableName="token_entry"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="token_entry">
+            <column name="processor_name" type="varchar(255)">
+                <constraints nullable="false"  primaryKey="true" primaryKeyName="token_entry_pk"/>
+            </column>
+            <column name="segment" type="int">
+            </column>
+            <column name="owner" type="varchar(255)">
+            </column>
+            <column name="timestamp" type="varchar(255)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="token_entry_pk"/>
+            </column>
+            <column name="token" type="int">
+            </column>
+            <column name="token_type" type="varchar(255)">
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

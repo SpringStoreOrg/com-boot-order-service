@@ -1,6 +1,5 @@
 package com.boot.order.model;
 
-import com.boot.order.dto.RejectionReason;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
