@@ -1,5 +1,7 @@
 package com.boot.order.config;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.AnyTypePermission;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.VelocityException;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,5 +34,13 @@ public class AppConfig {
  
         velocityEngineFactory.setVelocityProperties(props);
         return velocityEngineFactory.createVelocityEngine();
+    }
+
+    @Bean
+    public XStream xStream() {
+        XStream xStream = new XStream();
+        xStream.addPermission(AnyTypePermission.ANY);
+
+        return xStream;
     }
 }

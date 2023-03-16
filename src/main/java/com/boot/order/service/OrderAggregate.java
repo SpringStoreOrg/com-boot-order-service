@@ -2,11 +2,11 @@ package com.boot.order.service;
 
 
 import com.boot.command.CancelOrderCommand;
-import com.boot.command.ReserveProductsCommand;
+import com.boot.command.CompleteOrderCommand;
+import com.boot.command.CreateOrderCommand;
 import com.boot.event.OrderCancelledEvent;
 import com.boot.event.OrderCompletedEvent;
 import com.boot.event.OrderCreatedEvent;
-import com.boot.command.CreateOrderCommand;
 import com.boot.order.dto.OrderEntryDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
@@ -22,7 +22,6 @@ import java.util.UUID;
 @Aggregate
 @Slf4j
 public class OrderAggregate {
-    @AggregateIdentifier
     private UUID orderId;
     private String email;
     private long userId;
@@ -32,58 +31,96 @@ public class OrderAggregate {
     private String addressLine1;
     private String addressLine2;
     private String city;
-    private String state;
     private String zipPostalCode;
     private String country;
     private List<OrderEntryDTO> entries;
+    private OrderState state;
+
+    public OrderAggregate(){
+    }
 
     @CommandHandler
     public OrderAggregate(CreateOrderCommand command) {
-        log.info("CreateOrderCommand in Saga for Order Id : {}", command.getOrderId());
-        //Validate The Command
-        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
-        BeanUtils.copyProperties(command, orderCreatedEvent);
+        this.orderId = command.getOrderId();
+        this.state = OrderState.CREATED;
+        OrderCreatedEvent orderCreatedEvent = OrderCreatedEvent.builder()
+                .orderId(command.getOrderId())
+                .userId(command.getUserId())
+                .email(command.getEmail())
+                .firstName(command.getFirstName())
+                .lastName(command.getLastName())
+                .addressLine1(command.getAddressLine1())
+                .addressLine2(command.getAddressLine2())
+                .city(command.getCity())
+                .state(command.getState())
+                .zipPostalCode(command.getZipPostalCode())
+                .country(command.getCountry())
+                .entries(command.getEntries())
+                .build();
         AggregateLifecycle.apply(orderCreatedEvent);
+        log.info("{} OrderCreatedEvent trigger", command.getOrderId());
     }
 
     @EventSourcingHandler
     public void on(OrderCreatedEvent event) {
-        log.info("OrderCreatedEvent in Saga for Order Id : {}", event.getOrderId());
         this.userId = event.getUserId();
         this.orderId = event.getOrderId();
+        log.info("{} OrderCreatedEvent handler", event.getOrderId());
     }
 
     @CommandHandler
-    public void handle(ReserveProductsCommand reserveProductsCommand) {
-        log.info("ReserveProductsCommand in Saga for Order Id : {}", reserveProductsCommand.getOrderId());
-        //Validate The Command
-        // Publish Order Completed Event
-        OrderCompletedEvent orderCompletedEvent = OrderCompletedEvent.builder()
-                .orderId(reserveProductsCommand.getOrderId())
-                .userId(reserveProductsCommand.getUserId())
-                .email(reserveProductsCommand.getEmail())
-                .build();
+    public void handle(CompleteOrderCommand completeOrderCommand) {
+        if(this.state == OrderState.CREATED){
+            // Publish Order Completed Event
+            OrderCompletedEvent orderCompletedEvent = OrderCompletedEvent.builder()
+                    .orderId(completeOrderCommand.getOrderId())
+                    .userId(completeOrderCommand.getUserId())
+                    .email(completeOrderCommand.getEmail())
+                    .build();
 
-        AggregateLifecycle.apply(orderCompletedEvent);
+            AggregateLifecycle.apply(orderCompletedEvent);
+            log.info("{} CompleteOrderCommand handler", completeOrderCommand.getOrderId());
+        }else{
+            log.info("{} CompleteOrderCommand already handled", completeOrderCommand.getOrderId());
+        }
     }
 
     @EventSourcingHandler
     public void on(OrderCompletedEvent event) {
-        log.info("OrderCompletedEvent in Saga for Order Id : {}", event.getOrderId());
-        //this.orderStatus = event.getOrderStatus();
+        this.state = OrderState.COMPLETED;
+        log.info("{} OrderCompletedEvent handler", event.getOrderId());
     }
 
     @CommandHandler
     public void handle(CancelOrderCommand command) {
-        log.info("CancelOrderCommand in Saga for Order Id : {}", command.getOrderId());
-        OrderCancelledEvent orderCancelledEvent = new OrderCancelledEvent();
-        BeanUtils.copyProperties(command, orderCancelledEvent);
-        AggregateLifecycle.apply(orderCancelledEvent);
+        if(this.state == OrderState.CREATED){
+            OrderCancelledEvent orderCancelledEvent = OrderCancelledEvent.builder()
+                    .orderId(command.getOrderId())
+                    .userId(command.getUserId())
+                    .email(command.getEmail())
+                    .rejectionReason(command.getRejectionReason())
+                    .build();
+            BeanUtils.copyProperties(command, orderCancelledEvent);
+            AggregateLifecycle.apply(orderCancelledEvent);
+            log.info("{} CancelOrderCommand handler", command.getOrderId());
+        }else{
+            log.info("{} CancelOrderCommand already handled", command.getOrderId());
+        }
     }
 
     @EventSourcingHandler
     public void on(OrderCancelledEvent event) {
-        log.info("OrderCancelledEvent in Saga for Order Id : {}", event.getOrderId());
-        //this.orderStatus = event.getOrderStatus();
+        this.state = OrderState.CANCELLED;
+        log.info("{} OrderCancelledEvent handler", event.getOrderId());
+    }
+
+    @Override
+    @AggregateIdentifier
+    public String toString() {
+        return orderId + "-order";
+    }
+
+    enum OrderState{
+        CREATED, COMPLETED, CANCELLED;
     }
 }

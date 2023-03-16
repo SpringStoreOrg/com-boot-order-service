@@ -1,19 +1,21 @@
 package com.boot.command;
 
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
+import lombok.Getter;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 import java.util.UUID;
 
-@Data
-@Accessors(chain = true)
 @Builder
+@Getter
 public class CompleteOrderCommand {
-    @TargetAggregateIdentifier
     private UUID orderId;
     private String email;
     private long userId;
+
+    @Override
+    @TargetAggregateIdentifier
+    public String toString() {
+        return orderId + "-order";
+    }
 }

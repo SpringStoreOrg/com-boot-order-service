@@ -27,7 +27,6 @@ public class OrderProcessingSaga {
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     private void handle(OrderCreatedEvent event) {
-        log.info("OrderCreatedEvent in Saga for Order Id : {}", event.getOrderId());
         // we can use QueryGateway to get the details from other service.
         // Added the detail we can integrate other service for fetching the detail
         ReserveProductsCommand reserveProductsCommand  = ReserveProductsCommand.builder()
@@ -37,29 +36,30 @@ public class OrderProcessingSaga {
                 .email(event.getEmail())
                 .build();
 
-        commandGateway.sendAndWait(reserveProductsCommand);
+        commandGateway.send(reserveProductsCommand);
+        log.info("{} OrderCreatedEvent handled", event.getOrderId());
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(ProductsReservedEvent event) {
-        log.info("ProductsReservedEvent in Saga for Order Id : {}", event.getOrderId());
 
         CompleteOrderCommand completeOrderCommand  = CompleteOrderCommand.builder()
                 .orderId(event.getOrderId())
                 .build();
 
         commandGateway.send(completeOrderCommand);
+        log.info("{} ProductsReservedEvent handled", event.getOrderId());
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     @EndSaga
     public void handle(OrderCompletedEvent event) {
-        log.info("OrderCompletedEvent in Saga for Order Id : {}", event.getOrderId());
+        log.info("{} OrderCompletedEvent handled", event.getOrderId());
     }
 
     @SagaEventHandler(associationProperty = "orderId")
     @EndSaga
     public void handle(OrderCancelledEvent event) {
-        log.info("OrderCancelledEvent in Saga for Order Id : {}", event.getOrderId());
+        log.info("{} OrderCancelledEvent handled", event.getOrderId());
     }
 }

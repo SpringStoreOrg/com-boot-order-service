@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 @EnableEurekaClient
 @EntityScan(basePackages = {"com.boot.order.model",
 		"org.axonframework.modelling.saga.repository.jpa",
-		"org.axonframework.eventhandling.tokenstore.jpa"})
+		"org.axonframework.eventhandling.tokenstore.jpa",
+        "org.axonframework.eventsourcing.eventstore.jpa"
+})
 public class SpringOrderServiceApplication {
 
 	public static void main(String[] args) {

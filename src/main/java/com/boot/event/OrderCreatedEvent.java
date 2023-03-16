@@ -1,12 +1,16 @@
 package com.boot.event;
 
 import com.boot.order.dto.OrderEntryDTO;
+import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Builder
+@Getter
 public class OrderCreatedEvent {
     private UUID orderId;
     private String email;

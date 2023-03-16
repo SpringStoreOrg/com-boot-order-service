@@ -1,10 +1,12 @@
 package com.boot.event;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.util.UUID;
 
-@Data
+@Builder
+@Getter
 public class ProductsReservedEvent {
     private UUID orderId;
     private String email;

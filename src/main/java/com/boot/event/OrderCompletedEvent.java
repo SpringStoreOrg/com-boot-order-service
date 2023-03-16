@@ -1,12 +1,12 @@
 package com.boot.event;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
 import java.util.UUID;
 
-@Data
 @Builder
+@Getter
 public class OrderCompletedEvent {
     private UUID orderId;
     private String email;

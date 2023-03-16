@@ -1,14 +1,14 @@
 package com.boot.order.service;
 
 import com.boot.event.OrderCancelledEvent;
-import com.boot.event.OrderCreatedEvent;
 import com.boot.event.OrderCompletedEvent;
+import com.boot.event.OrderCreatedEvent;
 import com.boot.order.client.CartServiceClient;
 import com.boot.order.dto.OrderDTO;
 import com.boot.order.dto.OrderEntryDTO;
-import com.boot.order.model.OrderStatus;
 import com.boot.order.model.Order;
 import com.boot.order.model.OrderEntry;
+import com.boot.order.model.OrderStatus;
 import com.boot.order.model.RejectionReason;
 import com.boot.order.repository.OrderRepository;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -47,58 +46,10 @@ public class OrderService {
                 .orElse(null);
     }
 
-    @Transactional
-    public OrderDTO createNewOrder(OrderDTO orderDto, String email, long userId){
-    	log.info("createNewOrder - process started");
-
-    	//batch buy based on orderDTO
-        Order order = new Order();
-        order.setUuid(UUID.randomUUID())
-                .setEmail(email)
-                .setFirstName((orderDto.getFirstName()))
-                .setLastName((orderDto.getLastName()))
-                .setAddressLine1((orderDto.getAddressLine1()))
-                .setAddressLine2((orderDto.getAddressLine2()))
-                .setCity((orderDto.getCity()))
-                .setState((orderDto.getState()))
-                .setZipPostalCode((orderDto.getZipPostalCode()))
-                .setCountry((orderDto.getCountry()))
-                .setStatus(OrderStatus.RECEIVED)
-                .setLastUpdatedOn(LocalDateTime.now());
-
-        List<OrderEntry> newOrderEntries = new ArrayList<>();
-
-        double orderTotal = 0;
-
-        for (OrderEntryDTO entry : orderDto.getEntries()) {
-            OrderEntry orderEntry = new OrderEntry();
-
-            orderEntry.setProductName(entry.getProductName());
-            orderEntry.setPrice(entry.getPrice());
-            orderEntry.setQuantity(entry.getQuantity());
-            orderEntry.setOrder(order);
-
-            orderTotal += entry.getPrice() * entry.getQuantity();
-
-            newOrderEntries.add(orderEntry);
-        }
-
-        order.setEntries(newOrderEntries);
-        order.setTotal(orderTotal);
-
-        orderRepository.save(order);
-        log.info("Order for User: {} saved!", email);
-
-        cartServiceClient.callDeleteCartByUserId(userId);
-        log.info("Cart for User: {} deleted!", email);
-
-        return MAPPER.map(order, OrderDTO.class);
-    }
-
     @EventHandler
     @Transactional
     public void on(OrderCreatedEvent event) {
-        log.info("createNewOrder - process started");
+        log.info("createNewOrder after OrderCreatedEvent process started");
         Order order = new Order();
         order.setUuid(event.getOrderId())
                 .setEmail(event.getEmail())
@@ -135,6 +86,7 @@ public class OrderService {
 
         orderRepository.save(order);
         log.info("Order for User: {} saved!", event.getEmail());
+        log.info("{} createNewOrder COMPLETED", event.getOrderId());
     }
 
     @EventHandler
@@ -142,6 +94,7 @@ public class OrderService {
         Order order = orderRepository.getFirstByUuid(event.getOrderId());
         order.approve();
         orderRepository.save(order);
+        log.info("{} OrderCompletedEvent completed", event.getOrderId());
     }
 
     @EventHandler
@@ -149,4 +102,5 @@ public class OrderService {
         Order order = orderRepository.getFirstByUuid(event.getOrderId());
         order.reject(RejectionReason.valueOf(event.getRejectionReason()));
         orderRepository.save(order);
+        log.info("{} OrderCancelledEvent completed", event.getOrderId());
     }}

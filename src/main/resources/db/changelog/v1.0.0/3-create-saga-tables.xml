@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-    <changeSet author="FlorinV" id="2023-03-03-22.00">
+    <changeSet author="FlorinV" id="2023-03-06-22.00">
         <preConditions onFail="HALT">
             <not>
                 <tableExists tableName="association_value_entry"/>
@@ -13,7 +13,7 @@
         </preConditions>
 
         <createTable tableName="association_value_entry">
-            <column name="id" type="bigint">
+            <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="association_key" type="varchar(255)">
@@ -42,7 +42,7 @@
         </createIndex>
     </changeSet>
 
-    <changeSet author="FlorinV" id="2023-03-03-22.10">
+    <changeSet author="FlorinV" id="2023-03-06-22.10">
         <preConditions onFail="HALT">
             <not>
                 <tableExists tableName="saga_entry"/>
@@ -57,12 +57,12 @@
             </column>
             <column name="saga_type" type="varchar(255)">
             </column>
-            <column name="serialized_saga" type="int">
+            <column name="serialized_saga" type="blob">
             </column>
         </createTable>
     </changeSet>
 
-    <changeSet author="FlorinV" id="2023-03-03-22.20">
+    <changeSet author="FlorinV" id="2023-03-06-22.20">
         <preConditions onFail="HALT">
             <not>
                 <tableExists tableName="token_entry"/>
@@ -80,9 +80,82 @@
             <column name="timestamp" type="varchar(255)">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="token_entry_pk"/>
             </column>
-            <column name="token" type="int">
+            <column name="token" type="blob">
             </column>
             <column name="token_type" type="varchar(255)">
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="FlorinV" id="2023-03-06-22.30">
+        <preConditions onFail="HALT">
+            <not>
+                <tableExists tableName="snapshot_event_entry"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="snapshot_event_entry">
+            <column name="sequence_number" type="bigint">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="snapshot_event_entry_pk"/>
+            </column>
+            <column name="aggregate_identifier" type="varchar(255)">
+                <constraints  primaryKey="true"  nullable="false" primaryKeyName="snapshot_event_entry_pk"/>
+            </column>
+            <column name="type" type="varchar(255)">
+                <constraints  primaryKey="true" nullable="false" primaryKeyName="snapshot_event_entry_pk"/>
+            </column>
+            <column name="event_identifier" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="meta_data" type="longblob">
+            </column>
+            <column name="payload" type="longblob">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payload_revision" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payload_type" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="time_stamp" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="FlorinV" id="2023-03-06-22.40">
+        <preConditions onFail="HALT">
+            <not>
+                <tableExists tableName="domain_event_entry"/>
+            </not>
+        </preConditions>
+        <createTable tableName="domain_event_entry">
+            <column name="global_index" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="snapshot_event_entry_pk"/>
+            </column>
+            <column name="event_identifier" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="meta_data" type="longblob">
+            </column>
+            <column name="payload" type="longblob">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payload_revision" type="varchar(255)">
+            </column>
+            <column name="payload_type" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="time_stamp" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sequence_number" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aggregate_identifier" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar(255)">
             </column>
         </createTable>
     </changeSet>
