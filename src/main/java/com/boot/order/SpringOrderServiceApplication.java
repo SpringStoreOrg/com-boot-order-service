@@ -1,15 +1,15 @@
 package com.boot.order;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @Slf4j
 @SpringBootApplication
-@EnableEurekaClient
+//@EnableEurekaClient
+@EnableDiscoveryClient
 @EntityScan(basePackages = {"com.boot.order.model",
 		"org.axonframework.modelling.saga.repository.jpa",
 		"org.axonframework.eventhandling.tokenstore.jpa",

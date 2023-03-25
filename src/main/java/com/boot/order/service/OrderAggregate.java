@@ -70,7 +70,7 @@ public class OrderAggregate {
 
     @CommandHandler
     public void handle(CompleteOrderCommand completeOrderCommand) {
-        if(this.state == OrderState.CREATED){
+        if(this.state == OrderState.CREATED || this.state == null){
             // Publish Order Completed Event
             OrderCompletedEvent orderCompletedEvent = OrderCompletedEvent.builder()
                     .orderId(completeOrderCommand.getOrderId())
@@ -93,7 +93,7 @@ public class OrderAggregate {
 
     @CommandHandler
     public void handle(CancelOrderCommand command) {
-        if(this.state == OrderState.CREATED){
+        if(this.state == OrderState.CREATED || this.state == null){
             OrderCancelledEvent orderCancelledEvent = OrderCancelledEvent.builder()
                     .orderId(command.getOrderId())
                     .userId(command.getUserId())

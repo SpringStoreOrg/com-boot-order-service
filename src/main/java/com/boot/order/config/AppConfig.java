@@ -2,6 +2,7 @@ package com.boot.order.config;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.AnyTypePermission;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.VelocityException;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +16,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 @Configuration
-public class AppConfig {
+@Slf4j
+public class AppConfig{
 
     @Value("${cart.service.url}")
     private String cartServiceUrl;
@@ -43,4 +45,16 @@ public class AppConfig {
 
         return xStream;
     }
+
+//    @Bean
+//    public RestTemplate restTemplate() {
+//        RestTemplate restTemplate = new RestTemplate(
+//                new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory())
+//        );
+//        List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
+//        interceptors.add(new LoggingRequestInterceptor());
+//        restTemplate.setInterceptors(interceptors);
+//
+//        return restTemplate;
+//    }
 }

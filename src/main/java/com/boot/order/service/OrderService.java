@@ -26,9 +26,6 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class OrderService {
-
-    //https://blog.knoldus.com/saga-axonframework-springboot-1/
-    //https://blog.knoldus.com/saga-axonframework-springboot-2/
     private OrderRepository orderRepository;
 
     private CartServiceClient cartServiceClient;
