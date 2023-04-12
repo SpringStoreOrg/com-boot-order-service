@@ -1,9 +1,6 @@
 
 package com.boot.order.exception;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,24 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
-	@Data
-	@NoArgsConstructor
-	public class ApiError {
-
-		private int status;
-		private String message;
-		private String error;
-
-		public ApiError(HttpStatus httpStatus, String message) {
-			if (httpStatus != null) {
-				this.status = httpStatus.value();
-				this.error = httpStatus.getReasonPhrase();
-			}
-			this.message = message;
-		}
-	}
-
 	private ResponseEntity<ApiError> createResponseEntity(HttpStatus httpStatus,
 		Exception e)
 	{

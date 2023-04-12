@@ -1,8 +1,8 @@
 package com.boot.order.config;
 
-import java.io.IOException;
-import java.util.Properties;
-
+import com.boot.order.client.RetrieveMessageErrorDecoder;
+import com.boot.order.rabbitmq.Producer;
+import feign.codec.ErrorDecoder;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.VelocityException;
 import org.springframework.amqp.core.Binding;
@@ -10,31 +10,15 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.ui.velocity.VelocityEngineFactory;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
-import com.boot.order.client.CartServiceClient;
-import com.boot.order.rabbitmq.Producer;
+import java.io.IOException;
+import java.util.Properties;
 
 @Configuration
 public class AppConfig {
-
-    @Value("${cart.service.url}")
-    private String cartServiceUrl;
-
-    @Bean(name = "cartServiceRestTemplate")
-    public RestTemplate cartServiceRestTemplateUrl() {
-        return new RestTemplateBuilder().rootUri(cartServiceUrl).build();
-    }
-
 	@Bean
 	public Producer producer() {
 		return new Producer();
@@ -81,5 +65,8 @@ public class AppConfig {
         // Binding the queue to the topic with a routing key.
         return BindingBuilder.bind(queue).to(topicExchange).with(routingKey);
     }
-	
+    @Bean
+    public ErrorDecoder errorDecoder() {
+        return new RetrieveMessageErrorDecoder();
+    }
 }
