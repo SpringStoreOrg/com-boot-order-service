@@ -1,6 +1,6 @@
 package com.boot.order.exception;
 
-public class InvalidInputDataException extends Exception {
+public class InvalidInputDataException extends RuntimeException {
     /**
 	 * 
 	 */

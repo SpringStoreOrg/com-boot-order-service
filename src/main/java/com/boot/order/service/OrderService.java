@@ -1,9 +1,11 @@
 package com.boot.order.service;
 
 import com.boot.order.client.CartServiceClient;
+import com.boot.order.client.ProductServiceClient;
 import com.boot.order.dto.OrderDTO;
 import com.boot.order.dto.OrderEntryDTO;
 import com.boot.order.enums.OrderStatus;
+import com.boot.order.exception.InvalidInputDataException;
 import com.boot.order.model.Order;
 import com.boot.order.model.OrderEntry;
 import com.boot.order.rabbitmq.Producer;
@@ -11,6 +13,7 @@ import com.boot.order.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,8 @@ public class OrderService {
 
     private CartServiceClient cartServiceClient;
 
+    private ProductServiceClient productServiceClient;
+
     private Producer producer;
 
     private static final ModelMapper MAPPER = new ModelMapper();
@@ -39,6 +44,7 @@ public class OrderService {
     @Transactional
     public OrderDTO createNewOrder(OrderDTO orderDto, String email, long userId){
     	log.info("createNewOrder - process started");
+    	productServiceClient.subtractProducts(orderDto.getEntries());
 
         Order order = new Order();
         order.setUuid(UUID.randomUUID())
@@ -77,7 +83,7 @@ public class OrderService {
         orderRepository.save(order);
         log.info("Order for User: {} saved!", email);
 
-        cartServiceClient.callDeleteCartByUserId(userId);
+        cartServiceClient.deleteCartByUserId(userId);
         log.info("Cart for User: {} deleted!", email);
 
         producer.produce(order);
