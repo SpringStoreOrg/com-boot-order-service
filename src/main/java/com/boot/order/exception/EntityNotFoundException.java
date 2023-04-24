@@ -1,6 +1,6 @@
 package com.boot.order.exception;
 
-public class EntityNotFoundException extends Exception {
+public class EntityNotFoundException extends RuntimeException {
     /**
 	 * 
 	 */
