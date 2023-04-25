@@ -2,6 +2,7 @@ package com.boot.order.service;
 
 import com.boot.order.client.CartServiceClient;
 import com.boot.order.client.ProductServiceClient;
+import com.boot.order.dto.OrderCreatedEvent;
 import com.boot.order.dto.OrderDTO;
 import com.boot.order.dto.OrderEntryDTO;
 import com.boot.order.dto.ProductReservedEvent;
@@ -10,7 +11,6 @@ import com.boot.order.exception.EntityNotFoundException;
 import com.boot.order.exception.InvalidInputDataException;
 import com.boot.order.model.Order;
 import com.boot.order.model.OrderEntry;
-import com.boot.order.rabbitmq.Producer;
 import com.boot.order.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
 import static org.springframework.transaction.event.TransactionPhase.AFTER_ROLLBACK;
 
 @Slf4j
@@ -40,7 +42,7 @@ public class OrderService {
 
     private ProductServiceClient productServiceClient;
 
-    private Producer producer;
+    private EmailService emailService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -98,7 +100,7 @@ public class OrderService {
         cartServiceClient.deleteCartByUserId(userId);
         log.info("Cart for User: {} deleted!", email);
 
-        producer.produce(order);
+        applicationEventPublisher.publishEvent(new OrderCreatedEvent(order));
 
         return MAPPER.map(order, OrderDTO.class);
     }
@@ -135,6 +137,19 @@ public class OrderService {
             log.info("Add product service as compensating action finished for {}", productReservedEvent.getEntries().stream()
                     .map(item -> "name:" + item.getProductName() + " quantity:" + item.getQuantity())
                     .collect(Collectors.joining(";")));
+        }
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    public void commitOrderCreation(OrderCreatedEvent orderCreatedEvent) {
+        if (orderCreatedEvent != null) {
+            log.info("Sending order email to {}", orderCreatedEvent.getOrder().getEmail());
+            try {
+                emailService.sendOrderEmail(orderCreatedEvent.getOrder());
+                log.info("Sending order email to {} DONE", orderCreatedEvent.getOrder().getEmail());
+            } catch (MessagingException e) {
+                log.info("Sending order email to " + orderCreatedEvent.getOrder().getEmail() + " FAILED ", e.getMessage());
+            }
         }
     }
 }
