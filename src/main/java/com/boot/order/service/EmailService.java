@@ -36,7 +36,7 @@ public class EmailService {
 		Email email = new Email();
 
 
-		Map<String, Object> model = new HashMap<String, Object>();
+		Map<String, Object> model = new HashMap<>();
 		model.put("uuid", order.getUuid());
 		model.put("products", order.getEntries());
 		model.put("total", order.getTotal());
