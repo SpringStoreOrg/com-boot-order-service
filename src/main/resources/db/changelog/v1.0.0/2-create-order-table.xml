@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
+
+
+
+    <changeSet author="GeorgeT88" id="2023-11-11-20.02">
+
+        <preConditions onFail="HALT">
+            <not>
+                <tableExists tableName="order"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="order">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_on" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated_on" type="datetime"/>
+            <column name="state" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_count" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uuid" type="uuid">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="user_id" type="bigint"/>
+            <column name="receipt_address_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shipping_address_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="courier" type="varchar(30)"/>
+            <column name="tracking_number" type="varchar(30)"/>
+            <column name="tracking_url" type="varchar(100)"/>
+            <column name="notes" type="varchar(400)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="order"
+                baseColumnNames="receipt_address_id"
+                constraintName="receipt_address_id_f1"
+                referencedTableName="order_address"
+                referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint
+                baseTableName="order"
+                baseColumnNames="shipping_address_id"
+                constraintName="shipping_address_id_f1"
+                referencedTableName="order_address"
+                referencedColumnNames="id"/>
+
+    </changeSet>
+</databaseChangeLog>

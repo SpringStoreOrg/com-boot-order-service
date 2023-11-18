@@ -1,9 +1,16 @@
 package com.boot.order.config;
 
 import com.boot.order.client.RetrieveMessageErrorDecoder;
+import com.boot.order.dto.AddressDTO;
+import com.boot.order.dto.OrderDTO;
+import com.boot.order.dto.OrderEntryDTO;
+import com.boot.order.model.Order;
+import com.boot.order.model.OrderAddress;
+import com.boot.order.model.OrderEntry;
 import feign.codec.ErrorDecoder;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.VelocityException;
+import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ui.velocity.VelocityEngineFactory;
@@ -27,5 +34,24 @@ public class AppConfig {
     @Bean
     public ErrorDecoder errorDecoder() {
         return new RetrieveMessageErrorDecoder();
+    }
+
+    @Bean
+    public ModelMapper modelMapper(){
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.typeMap(Order.class, OrderDTO.class);
+        modelMapper.typeMap(OrderEntry.class, OrderEntryDTO.class);
+        modelMapper.typeMap(OrderAddress.class, AddressDTO.class);
+//        modelMapper.addMappings(new PropertyMap<Address, Address>() {
+//            @Override
+//            protected void configure() {
+//                skip(destination.getId());
+//                skip(destination.getCreatedOn());
+//                skip(destination.getLastUpdatedOn());
+//                skip(destination.getUser());
+//            }
+//        });
+
+        return modelMapper;
     }
 }

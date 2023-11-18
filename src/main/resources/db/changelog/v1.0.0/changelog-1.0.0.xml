@@ -5,7 +5,9 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-    <include file="1-create-order-table.xml" relativeToChangelogFile="true"/>
-    <include file="2-create-order_entry-table.xml" relativeToChangelogFile="true"/>
+    <include file="1-create-order_address-table.xml" relativeToChangelogFile="true"/>
+    <include file="2-create-order-table.xml" relativeToChangelogFile="true"/>
+    <include file="3-create-order_entry-table.xml" relativeToChangelogFile="true"/>
+    <include file="4-create-order_history-table.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

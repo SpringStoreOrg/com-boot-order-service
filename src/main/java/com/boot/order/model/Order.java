@@ -1,6 +1,6 @@
 package com.boot.order.model;
 
-import com.boot.order.enums.OrderStatus;
+import com.boot.order.enums.OrderState;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -16,10 +16,8 @@ import java.util.UUID;
 
 
 @Data
-@Accessors(chain = true)
 @Entity
 @Table(name = "order")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
 public class Order implements Serializable {
 
 	/**
@@ -31,52 +29,59 @@ public class Order implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 
-	@Column
-	private String firstName;
-
-	@Column
-	private String lastName;
-
-	@Column
-	private String addressLine1;
-
-	@Column
-	private String addressLine2;
-
-	@Column
-	private String city;
-
-	@Column
-	private String state;
-
-	@Column
-	private String zipPostalCode;
-
-	@Column
-	private String country;
-
 	@Column(unique = true)
 	@Type(type = "uuid-char")
 	private UUID uuid;
+
+	@Column
+	private Long userId;
 	
 	@Enumerated(EnumType.STRING)
-	private OrderStatus status;
+	private OrderState state;
 
 	@Column
 	private double total;
 
 	@Column
-	private LocalDateTime lastUpdatedOn;
+	private Integer productCount;
+
+	@ManyToOne
+	@JoinColumn(name = "receipt_address_id")
+	private OrderAddress receiptAddress;
+
+	@ManyToOne
+	@JoinColumn(name = "shipping_address_id")
+	private OrderAddress shippingAddress;
 
 	@Column
-	private String email;
+	private LocalDateTime createdOn;
 
-	@JsonManagedReference
+	@Column
+	private String courier;
+
+	@Column
+	private String trackingNumber;
+
+	@Column
+	private String trackingUrl;
+
+	@Column
+	private String notes;
+
+	@Column
+	private LocalDateTime lastUpdatedOn;
+
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY,  cascade = { CascadeType.ALL} )
 	private List<OrderEntry> entries;
 
+	@PrePersist
+	public void create(){
+		this.createdOn = LocalDateTime.now();
+		this.lastUpdatedOn = LocalDateTime.now();
+	}
+
 	@PreUpdate
-	protected void lastUpdatedOnPreUpdate() {
+	protected void update() {
 		this.lastUpdatedOn =  LocalDateTime.now();
 	}
 }

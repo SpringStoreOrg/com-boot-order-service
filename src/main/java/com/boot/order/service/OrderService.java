@@ -2,11 +2,8 @@ package com.boot.order.service;
 
 import com.boot.order.client.CartServiceClient;
 import com.boot.order.client.ProductServiceClient;
-import com.boot.order.dto.OrderCreatedEvent;
-import com.boot.order.dto.OrderDTO;
-import com.boot.order.dto.OrderEntryDTO;
-import com.boot.order.dto.ProductReservedEvent;
-import com.boot.order.enums.OrderStatus;
+import com.boot.order.dto.*;
+import com.boot.order.enums.OrderState;
 import com.boot.order.exception.EntityNotFoundException;
 import com.boot.order.exception.InvalidInputDataException;
 import com.boot.order.model.Order;
@@ -46,44 +43,29 @@ public class OrderService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private static final ModelMapper MAPPER = new ModelMapper();
-
-    static {
-        MAPPER.typeMap(OrderEntry.class, OrderDTO.class);
-    }
+    private ModelMapper modelMapper;
 
     @Transactional
-    public OrderDTO createNewOrder(OrderDTO orderDto, String email, long userId) {
-        log.info("createNewOrder - process started");
-        productServiceClient.subtractProducts(orderDto.getEntries());
+    public String createNewOrder(OrderDTO orderDto, String email, Long userId) {
         log.info("Subtract products {}", orderDto.getEntries().stream()
-                .map(item -> "name:" + item.getProductName() + " quantity:" + item.getQuantity())
+                .map(item -> String.format("name:%s quantity:%s",  item.getProductSlug(), item.getQuantity()))
                 .collect(Collectors.joining(";")));
-        applicationEventPublisher.publishEvent(new ProductReservedEvent(orderDto.getEntries()));
-        Order order = new Order();
-        order.setUuid(UUID.randomUUID())
-                .setEmail(email)
-                .setFirstName((orderDto.getFirstName()))
-                .setLastName((orderDto.getLastName()))
-                .setAddressLine1((orderDto.getAddressLine1()))
-                .setAddressLine2((orderDto.getAddressLine2()))
-                .setCity((orderDto.getCity()))
-                .setState((orderDto.getState()))
-                .setZipPostalCode((orderDto.getZipPostalCode()))
-                .setCountry((orderDto.getCountry()))
-                .setStatus(OrderStatus.IN_PROGRESS)
-                .setLastUpdatedOn(LocalDateTime.now());
+        List<StockDTO> reserveCall = orderDto.getEntries().stream()
+                .map(item->modelMapper.map(item, StockDTO.class))
+                .collect(Collectors.toList());
+        List<StockDTO> reserveCallResult = productServiceClient.reserveProducts(reserveCall).getBody();
+        applicationEventPublisher.publishEvent(new OrderPersistFailedEvent(reserveCallResult));
+
+        Order order = modelMapper.map(orderDto, Order.class);
+        order.setUuid(UUID.randomUUID());
+        order.setUserId(userId);
+        order.setState(OrderState.CREATED);
 
         List<OrderEntry> newOrderEntries = new ArrayList<>();
 
         double orderTotal = 0;
-
         for (OrderEntryDTO entry : orderDto.getEntries()) {
-            OrderEntry orderEntry = new OrderEntry();
-
-            orderEntry.setProductName(entry.getProductName());
-            orderEntry.setPrice(entry.getPrice());
-            orderEntry.setQuantity(entry.getQuantity());
+            OrderEntry orderEntry = modelMapper.map(entry, OrderEntry.class);
             orderEntry.setOrder(order);
 
             orderTotal += entry.getPrice() * entry.getQuantity();
@@ -97,45 +79,51 @@ public class OrderService {
         orderRepository.save(order);
         log.info("Order for User: {} saved!", email);
 
-        cartServiceClient.deleteCartByUserId(userId);
-        log.info("Cart for User: {} deleted!", email);
-
         applicationEventPublisher.publishEvent(new OrderCreatedEvent(order));
 
-        return MAPPER.map(order, OrderDTO.class);
+        return order.getUuid().toString();
     }
 
     @Transactional
-    public void deleteOrder(String orderId, String email) {
-        log.info("Deleting order {} for user {}", orderId, email);
+    public void cancelOrder(String orderId) {
+        log.info("Deleting order {}", orderId);
         Optional<Order> orderOptional = orderRepository.getFirstByUuid(UUID.fromString(orderId));
         if (orderOptional.isEmpty()) {
             throw new EntityNotFoundException("Order could not be found");
         }
         Order order = orderOptional.get();
-        if (!order.getEmail().equalsIgnoreCase(email)) {
-            throw new InvalidInputDataException("Order can be canceled only by the owner");
-        }
         List<OrderEntryDTO> entries = order.getEntries().stream()
                 .map(item -> new OrderEntryDTO(item.getProductName(), item.getPrice(), item.getQuantity()))
                 .collect(Collectors.toList());
-        productServiceClient.addProducts(entries);
-        log.info("Add products {}", entries.stream()
-                .map(item -> "name:" + item.getProductName() + " quantity:" + item.getQuantity())
+        List<StockDTO> releaseRequest = order.getEntries().stream()
+                .filter(entry -> entry.getQuantity() > entry.getOutOfStock())
+                .map(entry -> new StockDTO()
+                        .setProductSlug(entry.getProductName())
+                        .setQuantity(entry.getQuantity() - entry.getOutOfStock()))
+                .collect(Collectors.toList());
+        productServiceClient.releaseProducts(releaseRequest);
+        log.info("Releasing products {}", entries.stream()
+                .map(item -> String.format("name:%s quantity:%s", item.getProductSlug(),  item.getQuantity()))
                 .collect(Collectors.joining(";")));
         orderRepository.delete(order);
-        log.info("Deleted order {} for user {}", orderId, email);
+        log.info("Deleted order {} for user {}", orderId, order.getReceiptAddress().getEmail());
     }
 
     @TransactionalEventListener(phase = AFTER_ROLLBACK)
-    public void rollbackProductsReserve(ProductReservedEvent productReservedEvent) {
+    public void rollbackProductsReserve(OrderPersistFailedEvent productReservedEvent) {
         if (productReservedEvent != null) {
-            log.info("Add product service as compensating action for {}", productReservedEvent.getEntries().stream()
-                    .map(item -> "name:" + item.getProductName() + " quantity:" + item.getQuantity())
+            log.info("Add product service as compensating action for {}", productReservedEvent.getReservedProducts().stream()
+                    .map(item -> String.format("name:%s quantity:%s", item.getProductSlug(),  item.getQuantity()-item.getNotInStock()))
                     .collect(Collectors.joining(";")));
-            productServiceClient.addProducts(productReservedEvent.getEntries());
-            log.info("Add product service as compensating action finished for {}", productReservedEvent.getEntries().stream()
-                    .map(item -> "name:" + item.getProductName() + " quantity:" + item.getQuantity())
+            List<StockDTO> releaseCall = productReservedEvent.getReservedProducts().stream()
+                    .map(item->new StockDTO()
+                            .setProductSlug(item.getProductSlug())
+                            .setQuantity(item.getQuantity()-item.getNotInStock())
+                    )
+                    .collect(Collectors.toList());
+            productServiceClient.releaseProducts(releaseCall);
+            log.info("Add product service as compensating action finished for {}", productReservedEvent.getReservedProducts().stream()
+                    .map(item -> String.format("name:%s quantity:%s", item.getProductSlug(),  item.getQuantity()-item.getNotInStock()))
                     .collect(Collectors.joining(";")));
         }
     }
@@ -143,12 +131,16 @@ public class OrderService {
     @TransactionalEventListener(phase = AFTER_COMMIT)
     public void commitOrderCreation(OrderCreatedEvent orderCreatedEvent) {
         if (orderCreatedEvent != null) {
-            log.info("Sending order email to {}", orderCreatedEvent.getOrder().getEmail());
+            if (orderCreatedEvent.getOrder().getUserId() != null) {
+                cartServiceClient.deleteCartByUserId(orderCreatedEvent.getOrder().getUserId());
+                log.info("Cart for User: {} deleted!", orderCreatedEvent.getOrder().getUserId());
+            }
+            log.info("Sending order email to {}", orderCreatedEvent.getOrder().getShippingAddress().getEmail());
             try {
                 emailService.sendOrderEmail(orderCreatedEvent.getOrder());
-                log.info("Sending order email to {} DONE", orderCreatedEvent.getOrder().getEmail());
+                log.info("Sending order email to {} DONE", orderCreatedEvent.getOrder().getShippingAddress().getEmail());
             } catch (MessagingException e) {
-                log.info("Sending order email to " + orderCreatedEvent.getOrder().getEmail() + " FAILED ", e.getMessage());
+                log.info("Sending order email to " + orderCreatedEvent.getOrder().getShippingAddress().getEmail() + " FAILED ", e.getMessage());
             }
         }
     }

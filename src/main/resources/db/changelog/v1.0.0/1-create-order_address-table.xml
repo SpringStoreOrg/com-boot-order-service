@@ -5,37 +5,17 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-
-
-    <changeSet author="GeorgeT88" id="2022-11-17-19.01">
+    <changeSet author="FlorinV" id="2023-11-11-19.02">
 
         <preConditions onFail="HALT">
             <not>
-                <tableExists tableName="order"/>
+                <tableExists tableName="order_address"/>
             </not>
         </preConditions>
 
-        <createTable tableName="order">
+        <createTable tableName="order_address">
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="address_line1" type="varchar(150)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="address_line2" type="varchar(150)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="city" type="varchar(25)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="country" type="varchar(25)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="zip_postal_code" type="varchar(10)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="email" type="varchar(100)">
-                <constraints nullable="false"/>
             </column>
             <column name="first_name" type="varchar(50)">
                 <constraints nullable="false"/>
@@ -43,18 +23,29 @@
             <column name="last_name" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_updated_on" type="datetime"/>
-            <column name="state" type="varchar(35)">
+            <column name="email" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
-            <column name="status" type="varchar(15)">
+            <column name="phone_number" type="varchar(25)">
                 <constraints nullable="false"/>
             </column>
-            <column name="total" type="bigint">
+            <column name="country" type="varchar(60)">
                 <constraints nullable="false"/>
             </column>
-            <column name="uuid" type="uuid">
-                <constraints nullable="false" unique="true"/>
+            <column name="county" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="city" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postal_code" type="varchar(6)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="street" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_on" type="datetime">
+                <constraints nullable="false"/>
             </column>
         </createTable>
 

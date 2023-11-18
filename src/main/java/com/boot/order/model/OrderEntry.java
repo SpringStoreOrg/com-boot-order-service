@@ -32,6 +32,9 @@ public class OrderEntry  implements Serializable {
 	@Column
 	private Integer quantity;
 
+	@Column
+	private Integer outOfStock;
+
 	@JsonBackReference
 	@ManyToOne
 	@JoinColumn(name = "order_id")

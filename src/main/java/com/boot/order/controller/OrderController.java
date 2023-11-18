@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 
 @Controller
@@ -23,16 +24,16 @@ public class OrderController {
 
     @PostMapping
     @ResponseBody
-    public ResponseEntity<OrderDTO> createNewOrder(@RequestBody OrderDTO orderDto,
-                                                   @RequestHeader(value = "Username") @Email(message = "Invalid email!", regexp = Constants.EMAIL_REGEXP) String email,
-                                                   @RequestHeader(value = "User-Id") long userId) {
-        OrderDTO newOrder = orderService.createNewOrder(orderDto, email, userId);
-        return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
+    public ResponseEntity<String> createNewOrder(@Valid @RequestBody OrderDTO orderDto,
+                                                   @RequestHeader(value = "Username", required = false) @Email(message = "Invalid email!", regexp = Constants.EMAIL_REGEXP) String email,
+                                                   @RequestHeader(value = "User-Id", required = false) Long userId) {
+        String orderId = orderService.createNewOrder(orderDto, email, userId);
+        return new ResponseEntity<>(orderId, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<Object> deleteOrder(@PathVariable("orderId") String orderId, @RequestHeader(value = "Username") String email) {
-        orderService.deleteOrder(orderId, email);
+    public ResponseEntity<Object> cancelOrder(@PathVariable("orderId") String orderId) {
+        orderService.cancelOrder(orderId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

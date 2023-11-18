@@ -5,36 +5,38 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-    <changeSet author="GeorgeT88" id="2022-11-28-19.02">
+    <changeSet author="FlorinV" id="2023-11-11-23.02">
 
         <preConditions onFail="HALT">
             <not>
-                <tableExists tableName="order_entry"/>
+                <tableExists tableName="order_history"/>
             </not>
         </preConditions>
 
-        <createTable tableName="order_entry">
+        <createTable tableName="order_history">
             <column name="id" type="bigint" autoIncrement="true" >
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="product_name" type="varchar(100)">
+            <column name="created_on" type="datetime">
                 <constraints nullable="false"/>
             </column>
-            <column name="quantity" type="bigint">
+            <column name="state" type="varchar(10)">
                 <constraints nullable="false"/>
             </column>
-            <column name="order_id" type="bigint">
+            <column name="total" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="price" type="bigint">
+            <column name="product_count" type="bigint">
                 <constraints nullable="false"/>
             </column>
+            <column name="order_id" type="bigint"/>
+            <column name="tracking_number" type="varchar(30)"/>
         </createTable>
 
         <addForeignKeyConstraint
-                baseTableName="order_entry"
+                baseTableName="order_history"
                 baseColumnNames="order_id"
-                constraintName="order_entry_f1"
+                constraintName="order_history_f1"
                 referencedTableName="order"
                 referencedColumnNames="id"/>
 

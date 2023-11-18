@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import com.boot.order.dto.UserDTO;
 import com.boot.order.model.Email;
 import com.boot.order.model.Order;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +39,7 @@ public class EmailService {
 		model.put("uuid", order.getUuid());
 		model.put("products", order.getEntries());
 		model.put("total", order.getTotal());
-		model.put("adress", order.getAddressLine1());
+		model.put("address", order.getShippingAddress().getStreet());
 		email.setModel(model);
 
 		MimeMessage mimeMessage = emailSender.createMimeMessage();
@@ -49,7 +48,7 @@ public class EmailService {
 
 		mimeMessageHelper.setSubject("SpringStore confirmation Email");
 		mimeMessageHelper.setFrom("noreply@springwebstore.com");
-		mimeMessageHelper.setTo(order.getEmail());
+		mimeMessageHelper.setTo(order.getShippingAddress().getEmail());
 		email.setEmailContent(getContentFromTemplate(email.getModel(), ORDER_EMAIL_TEMPLATE));
 		mimeMessageHelper.setText(email.getEmailContent(), true);
 
