@@ -32,4 +32,9 @@ public class OrderHistory {
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
+
+    @PrePersist
+    public void create(){
+        this.createdOn = LocalDateTime.now();
+    }
 }

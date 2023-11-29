@@ -16,6 +16,6 @@ public class SpringOrderServiceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpringOrderServiceApplication.class, args);
-		log.info("Spring Order Services Application with rabbitmq started successfully.");
+		log.info("Spring Order Services started successfully.");
 	}
 }

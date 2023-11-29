@@ -6,11 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @Accessors(chain = true)
@@ -18,13 +18,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderDTO {
-	private UUID uuid;
+	@Valid
 	@NotNull
 	@NotEmpty
 	private List<OrderEntryDTO> entries;
+	@Valid
 	@NotNull
 	private AddressDTO shippingAddress;
-	@NotNull
+	@Valid
 	private AddressDTO receiptAddress;
 	@Size(max = 400)
 	private String notes;

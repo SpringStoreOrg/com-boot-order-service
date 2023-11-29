@@ -27,6 +27,9 @@ public class OrderEntry  implements Serializable {
 	private String productName;
 
 	@Column
+	private String productSlug;
+
+	@Column
 	private double price;
 
 	@Column

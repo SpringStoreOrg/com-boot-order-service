@@ -45,11 +45,11 @@ public class Order implements Serializable {
 	@Column
 	private Integer productCount;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "receipt_address_id")
 	private OrderAddress receiptAddress;
 
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "shipping_address_id")
 	private OrderAddress shippingAddress;
 

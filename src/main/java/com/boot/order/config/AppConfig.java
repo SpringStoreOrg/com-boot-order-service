@@ -42,15 +42,6 @@ public class AppConfig {
         modelMapper.typeMap(Order.class, OrderDTO.class);
         modelMapper.typeMap(OrderEntry.class, OrderEntryDTO.class);
         modelMapper.typeMap(OrderAddress.class, AddressDTO.class);
-//        modelMapper.addMappings(new PropertyMap<Address, Address>() {
-//            @Override
-//            protected void configure() {
-//                skip(destination.getId());
-//                skip(destination.getCreatedOn());
-//                skip(destination.getLastUpdatedOn());
-//                skip(destination.getUser());
-//            }
-//        });
 
         return modelMapper;
     }

@@ -5,9 +5,10 @@ import com.boot.order.client.ProductServiceClient;
 import com.boot.order.dto.*;
 import com.boot.order.enums.OrderState;
 import com.boot.order.exception.EntityNotFoundException;
-import com.boot.order.exception.InvalidInputDataException;
 import com.boot.order.model.Order;
 import com.boot.order.model.OrderEntry;
+import com.boot.order.model.OrderHistory;
+import com.boot.order.repository.OrderHistoryRepository;
 import com.boot.order.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import javax.mail.MessagingException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +34,8 @@ import static org.springframework.transaction.event.TransactionPhase.AFTER_ROLLB
 public class OrderService {
 
     private OrderRepository orderRepository;
+
+    private OrderHistoryRepository orderHistoryRepository;
 
     private CartServiceClient cartServiceClient;
 
@@ -60,23 +62,36 @@ public class OrderService {
         order.setUuid(UUID.randomUUID());
         order.setUserId(userId);
         order.setState(OrderState.CREATED);
+        if (order.getReceiptAddress() == null) {
+            order.setReceiptAddress(order.getShippingAddress());
+        }
 
         List<OrderEntry> newOrderEntries = new ArrayList<>();
 
         double orderTotal = 0;
+        int productCount = 0;
         for (OrderEntryDTO entry : orderDto.getEntries()) {
             OrderEntry orderEntry = modelMapper.map(entry, OrderEntry.class);
             orderEntry.setOrder(order);
-
+            Optional<StockDTO> optionalStockDTO = reserveCallResult.stream().filter(item -> item.getProductSlug().equals(entry.getProductSlug())).findFirst();
+            if (optionalStockDTO.isPresent()) {
+                orderEntry.setOutOfStock(optionalStockDTO.get().getNotInStock());
+            } else {
+                orderEntry.setOutOfStock(0);
+            }
             orderTotal += entry.getPrice() * entry.getQuantity();
-
+            productCount += entry.getQuantity();
             newOrderEntries.add(orderEntry);
         }
 
         order.setEntries(newOrderEntries);
         order.setTotal(orderTotal);
+        order.setProductCount(productCount);
 
         orderRepository.save(order);
+
+        persistOrderHistory(order);
+
         log.info("Order for User: {} saved!", email);
 
         applicationEventPublisher.publishEvent(new OrderCreatedEvent(order));
@@ -91,22 +106,43 @@ public class OrderService {
         if (orderOptional.isEmpty()) {
             throw new EntityNotFoundException("Order could not be found");
         }
+
         Order order = orderOptional.get();
         List<OrderEntryDTO> entries = order.getEntries().stream()
-                .map(item -> new OrderEntryDTO(item.getProductName(), item.getPrice(), item.getQuantity()))
+                .map(item -> modelMapper.map(item, OrderEntryDTO.class))
                 .collect(Collectors.toList());
         List<StockDTO> releaseRequest = order.getEntries().stream()
                 .filter(entry -> entry.getQuantity() > entry.getOutOfStock())
                 .map(entry -> new StockDTO()
-                        .setProductSlug(entry.getProductName())
+                        .setProductSlug(entry.getProductSlug())
                         .setQuantity(entry.getQuantity() - entry.getOutOfStock()))
                 .collect(Collectors.toList());
         productServiceClient.releaseProducts(releaseRequest);
         log.info("Releasing products {}", entries.stream()
                 .map(item -> String.format("name:%s quantity:%s", item.getProductSlug(),  item.getQuantity()))
                 .collect(Collectors.joining(";")));
-        orderRepository.delete(order);
-        log.info("Deleted order {} for user {}", orderId, order.getReceiptAddress().getEmail());
+
+        order.setState(OrderState.CANCELLED);
+        orderRepository.save(order);
+
+        persistOrderHistory(order);
+        log.info("Cancelled order {} for user {}", orderId, order.getReceiptAddress().getEmail());
+    }
+
+    public List<OrderGetDTO> getOrders(Long userId){
+        List<Order> orders = orderRepository.getAllByUserIdOrderByCreatedOnDesc(userId);
+        return orders.stream()
+                .map(item->modelMapper.map(item, OrderGetDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public OrderGetDetailsDTO getOrder(String orderId){
+        Optional<Order> orderOptional = orderRepository.getFirstByUuid(UUID.fromString(orderId));
+        if (orderOptional.isEmpty()) {
+            throw new EntityNotFoundException("Order could not be found");
+        }
+
+        return modelMapper.map(orderOptional.get(), OrderGetDetailsDTO.class);
     }
 
     @TransactionalEventListener(phase = AFTER_ROLLBACK)
@@ -143,5 +179,14 @@ public class OrderService {
                 log.info("Sending order email to " + orderCreatedEvent.getOrder().getShippingAddress().getEmail() + " FAILED ", e.getMessage());
             }
         }
+    }
+
+    private void persistOrderHistory(Order order){
+        OrderHistory orderHistory = new OrderHistory();
+        orderHistory.setOrder(order);
+        orderHistory.setProductCount(order.getProductCount());
+        orderHistory.setTotal(order.getTotal());
+        orderHistory.setState(order.getState());
+        orderHistoryRepository.save(orderHistory);
     }
 }
