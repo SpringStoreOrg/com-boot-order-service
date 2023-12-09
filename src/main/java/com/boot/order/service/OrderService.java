@@ -12,6 +12,8 @@ import com.boot.order.repository.OrderHistoryRepository;
 import com.boot.order.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -19,10 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import javax.mail.MessagingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
@@ -48,9 +47,9 @@ public class OrderService {
     private ModelMapper modelMapper;
 
     @Transactional
-    public String createNewOrder(OrderDTO orderDto, String email, Long userId) {
+    public OrderGetDTO createNewOrder(OrderDTO orderDto, String email, Long userId) {
         log.info("Subtract products {}", orderDto.getEntries().stream()
-                .map(item -> String.format("name:%s quantity:%s",  item.getProductSlug(), item.getQuantity()))
+                .map(item -> String.format("name:%s quantity:%s",  item.getSlug(), item.getQuantity()))
                 .collect(Collectors.joining(";")));
         List<StockDTO> reserveCall = orderDto.getEntries().stream()
                 .map(item->modelMapper.map(item, StockDTO.class))
@@ -73,7 +72,7 @@ public class OrderService {
         for (OrderEntryDTO entry : orderDto.getEntries()) {
             OrderEntry orderEntry = modelMapper.map(entry, OrderEntry.class);
             orderEntry.setOrder(order);
-            Optional<StockDTO> optionalStockDTO = reserveCallResult.stream().filter(item -> item.getProductSlug().equals(entry.getProductSlug())).findFirst();
+            Optional<StockDTO> optionalStockDTO = reserveCallResult.stream().filter(item -> item.getProductSlug().equals(entry.getSlug())).findFirst();
             if (optionalStockDTO.isPresent()) {
                 orderEntry.setOutOfStock(optionalStockDTO.get().getNotInStock());
             } else {
@@ -88,7 +87,7 @@ public class OrderService {
         order.setTotal(orderTotal);
         order.setProductCount(productCount);
 
-        orderRepository.save(order);
+        Order persistedOrder = orderRepository.save(order);
 
         persistOrderHistory(order);
 
@@ -96,7 +95,7 @@ public class OrderService {
 
         applicationEventPublisher.publishEvent(new OrderCreatedEvent(order));
 
-        return order.getUuid().toString();
+        return modelMapper.map(persistedOrder, OrderGetDTO.class);
     }
 
     @Transactional
@@ -119,7 +118,7 @@ public class OrderService {
                 .collect(Collectors.toList());
         productServiceClient.releaseProducts(releaseRequest);
         log.info("Releasing products {}", entries.stream()
-                .map(item -> String.format("name:%s quantity:%s", item.getProductSlug(),  item.getQuantity()))
+                .map(item -> String.format("name:%s quantity:%s", item.getSlug(),  item.getQuantity()))
                 .collect(Collectors.joining(";")));
 
         order.setState(OrderState.CANCELLED);
@@ -142,7 +141,16 @@ public class OrderService {
             throw new EntityNotFoundException("Order could not be found");
         }
 
-        return modelMapper.map(orderOptional.get(), OrderGetDetailsDTO.class);
+        OrderGetDetailsDTO result =  modelMapper.map(orderOptional.get(), OrderGetDetailsDTO.class);
+        Map<String, ProductDTO> productsMap = getProductDTOS(orderOptional.get().getEntries());
+        result.getEntries().forEach(item->{
+            ProductDTO product = productsMap.get(item.getProductSlug());
+            if(product!=null && product.getImages().size()>0){
+                    item.setProductImg(product.getImages().get(0));
+            }
+        });
+
+        return result;
     }
 
     @TransactionalEventListener(phase = AFTER_ROLLBACK)
@@ -188,5 +196,18 @@ public class OrderService {
         orderHistory.setTotal(order.getTotal());
         orderHistory.setState(order.getState());
         orderHistoryRepository.save(orderHistory);
+    }
+
+    public Map<String, ProductDTO> getProductDTOS(List<OrderEntry> orderEntries) {
+        if (CollectionUtils.isNotEmpty(orderEntries)) {
+            String productParam = orderEntries.stream()
+                    .map(OrderEntry::getProductSlug)
+                    .collect(Collectors.joining(","));
+            if (StringUtils.isNotBlank(productParam)) {
+                return productServiceClient.callGetAllProductsFromUserFavorites(productParam, true).getProducts().stream().collect(Collectors.toMap(ProductDTO::getSlug, item->item));
+            }
+        }
+
+        return new HashMap<>();
     }
 }

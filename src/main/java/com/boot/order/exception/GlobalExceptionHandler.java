@@ -77,6 +77,16 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler(Exception.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ResponseEntity<ApiError> exception(
+			Exception entityNotFoundException)
+	{
+		log.info(entityNotFoundException);
+		return createResponseEntity(HttpStatus.NOT_FOUND, entityNotFoundException);
+	}
+
+
 	class ErrorResponse {
 		public List<ErrorMessage> messages = new ArrayList<>();
 	}

@@ -1,11 +1,10 @@
 package com.boot.order.client;
 
+import com.boot.order.dto.PagedProductsResponseDTO;
 import com.boot.order.dto.StockDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -18,4 +17,8 @@ public interface ProductServiceClient {
     @PostMapping(value = "/stock/release")
     @ResponseBody
     ResponseEntity<List<StockDTO>> releaseProducts(@RequestBody List<StockDTO> orders);
+
+    @GetMapping
+    @ResponseBody
+    PagedProductsResponseDTO callGetAllProductsFromUserFavorites(@RequestParam("productNames") String productNames, @RequestParam("includeInactive") Boolean includeInactive);
 }

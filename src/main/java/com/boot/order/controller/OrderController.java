@@ -28,11 +28,11 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<String> createNewOrder(@Valid @RequestBody OrderDTO orderDto,
+    public ResponseEntity<OrderGetDTO> createNewOrder(@Valid @RequestBody OrderDTO orderDto,
                                                    @RequestHeader(value = "Username", required = false) @Email(message = "Invalid email!", regexp = Constants.EMAIL_REGEXP) String email,
                                                    @RequestHeader(value = "User-Id", required = false) Long userId) {
-        String orderId = orderService.createNewOrder(orderDto, email, userId);
-        return new ResponseEntity<>(orderId, HttpStatus.CREATED);
+        OrderGetDTO order = orderService.createNewOrder(orderDto, email, userId);
+        return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{orderId}")

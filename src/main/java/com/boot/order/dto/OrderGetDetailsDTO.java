@@ -22,15 +22,13 @@ public class OrderGetDetailsDTO{
     private double total;
     private String state;
     private Integer productCount;
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdOn;
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdatedOn;
     private String courier;
     private String trackingNumber;
     private String trackingUrl;
 
-    private List<OrderEntryDTO> entries;
+    private List<OrderEntryGetDTO> entries;
     private AddressDTO shippingAddress;
     private AddressDTO receiptAddress;
     private String notes;
