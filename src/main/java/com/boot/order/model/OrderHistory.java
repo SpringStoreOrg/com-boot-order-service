@@ -4,6 +4,7 @@ import com.boot.order.enums.OrderState;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -28,6 +29,9 @@ public class OrderHistory {
 
     @Column
     private String trackingNumber;
+
+    @Column
+    private LocalDate deliveryDate;
 
     @ManyToOne
     @JoinColumn(name = "order_id")

@@ -46,6 +46,7 @@
             <column name="tracking_number" type="varchar(30)"/>
             <column name="tracking_url" type="varchar(100)"/>
             <column name="notes" type="varchar(400)"/>
+            <column name="delivery_date" type="date"/>
         </createTable>
 
         <addForeignKeyConstraint

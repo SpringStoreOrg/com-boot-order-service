@@ -31,6 +31,7 @@
             </column>
             <column name="order_id" type="bigint"/>
             <column name="tracking_number" type="varchar(30)"/>
+            <column name="delivery_date" type="date"/>
         </createTable>
 
         <addForeignKeyConstraint

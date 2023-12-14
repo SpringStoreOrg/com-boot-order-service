@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -27,4 +28,5 @@ public class OrderGetDTO {
     private String courier;
     private String trackingNumber;
     private String trackingUrl;
+    private LocalDate deliveryDate;
 }

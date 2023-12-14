@@ -1,15 +1,12 @@
 package com.boot.order.model;
 
 import com.boot.order.enums.OrderState;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
-import lombok.experimental.Accessors;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -64,6 +61,9 @@ public class Order implements Serializable {
 
 	@Column
 	private String trackingUrl;
+
+	@Column
+	private LocalDate deliveryDate;
 
 	@Column
 	private String notes;

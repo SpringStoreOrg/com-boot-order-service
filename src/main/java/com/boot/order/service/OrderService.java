@@ -10,18 +10,22 @@ import com.boot.order.model.OrderEntry;
 import com.boot.order.model.OrderHistory;
 import com.boot.order.repository.OrderHistoryRepository;
 import com.boot.order.repository.OrderRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import javax.mail.MessagingException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.springframework.transaction.event.TransactionPhase.AFTER_COMMIT;
@@ -29,22 +33,25 @@ import static org.springframework.transaction.event.TransactionPhase.AFTER_ROLLB
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class OrderService {
 
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
 
-    private OrderHistoryRepository orderHistoryRepository;
+    private final OrderHistoryRepository orderHistoryRepository;
 
-    private CartServiceClient cartServiceClient;
+    private final CartServiceClient cartServiceClient;
 
-    private ProductServiceClient productServiceClient;
+    private final ProductServiceClient productServiceClient;
 
-    private EmailService emailService;
+    private final EmailService emailService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
+
+    @Value("${estimated.days.to.deliver}")
+    private int estimatedDaysToDeliver;
 
     @Transactional
     public OrderGetDTO createNewOrder(OrderDTO orderDto, String email, Long userId) {
@@ -86,6 +93,7 @@ public class OrderService {
         order.setEntries(newOrderEntries);
         order.setTotal(orderTotal);
         order.setProductCount(productCount);
+        order.setDeliveryDate(addBusinessDays(LocalDate.now(), estimatedDaysToDeliver));
 
         Order persistedOrder = orderRepository.save(order);
 
@@ -195,6 +203,7 @@ public class OrderService {
         orderHistory.setProductCount(order.getProductCount());
         orderHistory.setTotal(order.getTotal());
         orderHistory.setState(order.getState());
+        orderHistory.setDeliveryDate(order.getDeliveryDate());
         orderHistoryRepository.save(orderHistory);
     }
 
@@ -209,5 +218,22 @@ public class OrderService {
         }
 
         return new HashMap<>();
+    }
+
+    private static LocalDate addBusinessDays(LocalDate localDate, int days) {
+        Predicate<LocalDate> isWeekend = date
+                -> date.getDayOfWeek() == DayOfWeek.SATURDAY
+                || date.getDayOfWeek() == DayOfWeek.SUNDAY;
+
+        LocalDate result = localDate;
+
+        while (days > 0) {
+            result = result.plusDays(1);
+            if (isWeekend.negate().test(result)) {
+                days--;
+            }
+        }
+
+        return result;
     }
 }

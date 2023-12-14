@@ -1,13 +1,12 @@
 package com.boot.order.dto;
 
-import com.boot.order.enums.OrderState;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +26,7 @@ public class OrderGetDetailsDTO{
     private String courier;
     private String trackingNumber;
     private String trackingUrl;
+    private LocalDate deliveryDate;
 
     private List<OrderEntryGetDTO> entries;
     private AddressDTO shippingAddress;
