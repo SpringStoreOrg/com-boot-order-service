@@ -71,6 +71,9 @@ public class Order implements Serializable {
 	@Column
 	private LocalDateTime lastUpdatedOn;
 
+	@Version
+	private int version;
+
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY,  cascade = { CascadeType.ALL} )
 	private List<OrderEntry> entries;
 

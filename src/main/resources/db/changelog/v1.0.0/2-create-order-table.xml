@@ -47,6 +47,9 @@
             <column name="tracking_url" type="varchar(100)"/>
             <column name="notes" type="varchar(400)"/>
             <column name="delivery_date" type="date"/>
+            <column name="version" type="bigint">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <addForeignKeyConstraint
