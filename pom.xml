@@ -6,7 +6,7 @@
 
 	<groupId>com.boot.order.service</groupId>
 	<artifactId>order-service</artifactId>
-	<version>1.0</version>
+	<version>1.0.1</version>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -138,7 +138,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<image>
-						<name>fractalwoodstories/${project.artifactId}</name>
+						<name>fractalwoodstories/${project.artifactId}:${project.version}</name>
 					</image>
 					<docker>
 						<publishRegistry>
