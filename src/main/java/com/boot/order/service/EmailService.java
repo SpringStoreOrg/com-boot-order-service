@@ -8,6 +8,7 @@ import javax.mail.internet.MimeMessage;
 
 import com.boot.order.model.Email;
 import com.boot.order.model.Order;
+import com.boot.order.model.OrderAddress;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.ui.velocity.VelocityEngineUtils;
 public class EmailService {
 
 	private static final String ORDER_EMAIL_TEMPLATE = "/templates/order-email-template.vm";
+	private static final String ADDRESS_TEMPLATE = "%s %s<br>%s<br>Strada %s, %s<br>%s, %s, %s";
 
 	@Autowired
 	JavaMailSender emailSender;
@@ -46,7 +48,7 @@ public class EmailService {
 		model.put("uuid", order.getUuid());
 		model.put("products", order.getEntries());
 		model.put("total", order.getTotal());
-		model.put("address", order.getShippingAddress().getStreet());
+		model.put("address", getAddressString(order));
 		email.setModel(model);
 
 		MimeMessage mimeMessage = emailSender.createMimeMessage();
@@ -73,4 +75,10 @@ public class EmailService {
 		return content.toString();
 	}
 
+	private String getAddressString(Order order) {
+		OrderAddress address = order.getShippingAddress();
+		return String.format(ADDRESS_TEMPLATE, address.getFirstName(), address.getLastName(),
+				address.getPhoneNumber(), address.getStreet(), address.getPostalCode(),
+				address.getCity(), address.getCounty(), address.getCountry());
+	}
 }

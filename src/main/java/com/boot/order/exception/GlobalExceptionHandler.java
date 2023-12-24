@@ -16,12 +16,7 @@ import java.util.List;
 @Log4j2
 @ControllerAdvice
 public class GlobalExceptionHandler {
-	private ResponseEntity<ApiError> createResponseEntity(HttpStatus httpStatus,
-		Exception e)
-	{
-		return new ResponseEntity<>(new ApiError(httpStatus, e.getMessage()),
-			httpStatus);
-	}
+
 
 	@ExceptionHandler(EntityNotFoundException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
@@ -78,12 +73,18 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(Exception.class)
-	@ResponseStatus(HttpStatus.NOT_FOUND)
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public ResponseEntity<ApiError> exception(
-			Exception entityNotFoundException)
+			Exception exception) {
+		log.error(exception);
+		return createResponseEntity(HttpStatus.NOT_FOUND, exception);
+	}
+
+	private ResponseEntity<ApiError> createResponseEntity(HttpStatus httpStatus,
+														  Exception e)
 	{
-		log.info(entityNotFoundException);
-		return createResponseEntity(HttpStatus.NOT_FOUND, entityNotFoundException);
+		return new ResponseEntity<>(new ApiError(httpStatus, e.getMessage()),
+				httpStatus);
 	}
 
 
