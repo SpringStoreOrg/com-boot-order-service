@@ -55,7 +55,7 @@ public class EmailService {
 
 		MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
 
-		mimeMessageHelper.setSubject("SpringStore confirmation Email");
+		mimeMessageHelper.setSubject("FractalWoodStories confirmare comanda");
 		mimeMessageHelper.setFrom(fromEmail);
 		mimeMessageHelper.setBcc(ownerEmail);
 		mimeMessageHelper.setTo(order.getShippingAddress().getEmail());
