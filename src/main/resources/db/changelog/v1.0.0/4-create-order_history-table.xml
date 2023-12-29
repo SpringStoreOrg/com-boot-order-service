@@ -29,6 +29,7 @@
             <column name="product_count" type="bigint">
                 <constraints nullable="false"/>
             </column>
+            <column name="user_id" type="bigint"/>
             <column name="order_id" type="bigint"/>
             <column name="tracking_number" type="varchar(30)"/>
             <column name="delivery_date" type="date"/>

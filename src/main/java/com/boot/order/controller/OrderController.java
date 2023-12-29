@@ -8,6 +8,9 @@ import com.boot.order.service.OrderService;
 import com.boot.order.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,15 +39,15 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
-    public ResponseEntity cancelOrder(@PathVariable("orderId") String orderId) {
-        orderService.cancelOrder(orderId);
+    public ResponseEntity cancelOrder(@PathVariable("orderId") String orderId, @RequestHeader(value = "User-Id") Long userId) {
+        orderService.cancelOrderByUser(orderId, userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<List<OrderGetDTO>> getOrdersForUser(@RequestHeader(value = "User-Id") Long userId) {
-        return new ResponseEntity<>(orderService.getOrders(userId), HttpStatus.OK);
+    public ResponseEntity<List<OrderGetDTO>> getOrdersForUser(@RequestHeader(value = "User-Id") Long userId, @PageableDefault(size = 10, direction = Sort.Direction.DESC, sort = {"createdOn"}) Pageable pageable) {
+        return new ResponseEntity<>(orderService.getOrders(userId, pageable), HttpStatus.OK);
     }
 
     @GetMapping("/{orderId}")

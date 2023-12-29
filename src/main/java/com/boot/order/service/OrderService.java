@@ -5,6 +5,7 @@ import com.boot.order.client.ProductServiceClient;
 import com.boot.order.dto.*;
 import com.boot.order.enums.OrderState;
 import com.boot.order.exception.EntityNotFoundException;
+import com.boot.order.exception.UnableToModifyDataException;
 import com.boot.order.model.Order;
 import com.boot.order.model.OrderEntry;
 import com.boot.order.model.OrderHistory;
@@ -17,6 +18,8 @@ import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -97,7 +100,7 @@ public class OrderService {
 
         Order persistedOrder = orderRepository.save(order);
 
-        persistOrderHistory(order);
+        persistOrderHistory(order, userId);
 
         log.info("Order for User: {} saved!", email);
 
@@ -107,37 +110,82 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder(String orderId) {
-        log.info("Deleting order {}", orderId);
+    public void cancelOrderByUser(String orderId, Long userId) {
+        log.info("Canceling order {}", orderId);
+        Optional<Order> orderOptional = orderRepository.getFirstByUuid(UUID.fromString(orderId));
+        if (orderOptional.isEmpty()) {
+            throw new EntityNotFoundException("Order could not be found");
+        }
+        Order order = orderOptional.get();
+
+        if(!userId.equals(order.getUserId())){
+            throw new UnableToModifyDataException("Not allowed to cancel order");
+        }
+
+        cancelOrder(order, userId);
+    }
+
+    @Transactional
+    public void cancelOrderByAdmin(String orderId, Long userId) {
+        log.info("Canceling order {}", orderId);
         Optional<Order> orderOptional = orderRepository.getFirstByUuid(UUID.fromString(orderId));
         if (orderOptional.isEmpty()) {
             throw new EntityNotFoundException("Order could not be found");
         }
 
         Order order = orderOptional.get();
-        List<OrderEntryDTO> entries = order.getEntries().stream()
-                .map(item -> modelMapper.map(item, OrderEntryDTO.class))
-                .collect(Collectors.toList());
-        List<StockDTO> releaseRequest = order.getEntries().stream()
-                .filter(entry -> entry.getQuantity() > entry.getOutOfStock())
-                .map(entry -> new StockDTO()
-                        .setProductSlug(entry.getProductSlug())
-                        .setQuantity(entry.getQuantity() - entry.getOutOfStock()))
-                .collect(Collectors.toList());
-        productServiceClient.releaseProducts(releaseRequest);
-        log.info("Releasing products {}", entries.stream()
-                .map(item -> String.format("name:%s quantity:%s", item.getSlug(),  item.getQuantity()))
-                .collect(Collectors.joining(";")));
-
-        order.setState(OrderState.CANCELLED);
-        orderRepository.save(order);
-
-        persistOrderHistory(order);
-        log.info("Cancelled order {} for user {}", orderId, order.getReceiptAddress().getEmail());
+        cancelOrder(order, userId);
     }
 
-    public List<OrderGetDTO> getOrders(Long userId){
-        List<Order> orders = orderRepository.getAllByUserIdOrderByCreatedOnDesc(userId);
+    @Transactional
+    public void markAsCompleted(String orderId, Long userId) {
+        log.info("Completing order {}", orderId);
+        Optional<Order> orderOptional = orderRepository.getFirstByUuid(UUID.fromString(orderId));
+        if (orderOptional.isEmpty()) {
+            throw new EntityNotFoundException("Order could not be found");
+        }
+        Order order = orderOptional.get();
+        if (!OrderState.CREATED.equals(order.getState()) && !OrderState.SENT.equals(order.getState())) {
+            throw new UnableToModifyDataException("Order could not be marked as completed");
+        }
+        order.setState(OrderState.COMPLETED);
+        order.setDeliveryDate(LocalDate.now());
+
+        persistOrderHistory(order, userId);
+    }
+
+    @Transactional
+    public void markAsSent(String orderId, OrderSendDTO orderSent, Long userId) {
+        log.info("Mars as sent order {}", orderId);
+        Optional<Order> orderOptional = orderRepository.getFirstByUuid(UUID.fromString(orderId));
+        if (orderOptional.isEmpty()) {
+            throw new EntityNotFoundException("Order could not be found");
+        }
+
+        Order order = orderOptional.get();
+        if (!OrderState.CREATED.equals(order.getState())) {
+            throw new UnableToModifyDataException("Order could not be marked as sent");
+        }
+        order.setTrackingNumber(orderSent.getTrackingNumber());
+        order.setTrackingUrl(orderSent.getTrackingUrl());
+        order.setCourier(orderSent.getCourier());
+        order.setDeliveryDate(orderSent.getDeliveryDate());
+        order.setState(OrderState.SENT);
+
+        orderRepository.save(order);
+
+        persistOrderHistory(order, userId);
+    }
+
+    public List<OrderGetDTO> getOrders(Long userId, Pageable pageable){
+        List<Order> orders = orderRepository.getAllByUserId(userId, pageable);
+        return orders.stream()
+                .map(item->modelMapper.map(item, OrderGetDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    public List<OrderGetDTO> getOrders(Pageable pageable){
+        Page<Order> orders = orderRepository.findAll(pageable);
         return orders.stream()
                 .map(item->modelMapper.map(item, OrderGetDTO.class))
                 .collect(Collectors.toList());
@@ -197,13 +245,41 @@ public class OrderService {
         }
     }
 
-    private void persistOrderHistory(Order order){
+    private void cancelOrder(Order order, Long userId){
+        if (!OrderState.CREATED.equals(order.getState())){
+            throw new UnableToModifyDataException("Order could not be marked as cancelled");
+        }
+
+        List<OrderEntryDTO> entries = order.getEntries().stream()
+                .map(item -> modelMapper.map(item, OrderEntryDTO.class))
+                .collect(Collectors.toList());
+        List<StockDTO> releaseRequest = order.getEntries().stream()
+                .filter(entry -> entry.getQuantity() > entry.getOutOfStock())
+                .map(entry -> new StockDTO()
+                        .setProductSlug(entry.getProductSlug())
+                        .setQuantity(entry.getQuantity() - entry.getOutOfStock()))
+                .collect(Collectors.toList());
+        productServiceClient.releaseProducts(releaseRequest);
+        log.info("Releasing products {}", entries.stream()
+                .map(item -> String.format("name:%s quantity:%s", item.getSlug(),  item.getQuantity()))
+                .collect(Collectors.joining(";")));
+
+        order.setState(OrderState.CANCELLED);
+        orderRepository.save(order);
+
+        persistOrderHistory(order, userId);
+        log.info("Cancelled order {} for user {}", order.getId(), order.getReceiptAddress().getEmail());
+    }
+
+    private void persistOrderHistory(Order order, Long userId){
         OrderHistory orderHistory = new OrderHistory();
         orderHistory.setOrder(order);
         orderHistory.setProductCount(order.getProductCount());
         orderHistory.setTotal(order.getTotal());
         orderHistory.setState(order.getState());
         orderHistory.setDeliveryDate(order.getDeliveryDate());
+        orderHistory.setTrackingNumber(order.getTrackingNumber());
+        orderHistory.setUserId(userId);
         orderHistoryRepository.save(orderHistory);
     }
 

@@ -25,6 +25,9 @@ public class OrderHistory {
     private Integer productCount;
 
     @Column
+    private Long userId;
+
+    @Column
     private LocalDateTime createdOn;
 
     @Column

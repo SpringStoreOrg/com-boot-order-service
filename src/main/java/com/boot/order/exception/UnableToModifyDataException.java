@@ -1,6 +1,6 @@
 package com.boot.order.exception;
 
-public class UnableToModifyDataException  extends Exception {
+public class UnableToModifyDataException  extends RuntimeException {
     /**
 	 * 
 	 */
