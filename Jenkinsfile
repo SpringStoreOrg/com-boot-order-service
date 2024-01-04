@@ -1,3 +1,4 @@
+def shortGitCommit
 pipeline {
     agent any
 
@@ -42,12 +43,22 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'fractalwoodstories-docker-hub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh """
-                        docker tag fractalwoodstories/order-service:arm64-latest fractalwoodstories/order-service:arm64-main
+                        docker tag fractalwoodstories/order-service:arm64-latest fractalwoodstories/order-service:arm64-main-${shortGitCommit}
                         docker login -u ${USERNAME} -p ${PASSWORD}
-                        docker push fractalwoodstories/order-service:arm64-master
+                        docker push fractalwoodstories/order-service:arm64-main-${shortGitCommit}
                         docker logout
                     """
                 }
+            }
+        }
+        stage('Helm main') {
+            when {
+                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'origin/main' }
+            }
+            steps{
+                sh """
+                    helm upgrade --install order-service ./helm/order-service --set image.tag=arm64-main-${shortGitCommit}
+                """
             }
         }
     }
