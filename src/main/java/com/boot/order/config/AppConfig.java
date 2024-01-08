@@ -1,17 +1,12 @@
 package com.boot.order.config;
 
 import com.boot.order.client.RetrieveMessageErrorDecoder;
-import com.boot.order.dto.AddressDTO;
-import com.boot.order.dto.OrderDTO;
-import com.boot.order.dto.OrderEntryDTO;
-import com.boot.order.dto.StockDTO;
-import com.boot.order.model.Order;
-import com.boot.order.model.OrderAddress;
-import com.boot.order.model.OrderEntry;
+import com.boot.order.dto.*;
+import com.boot.order.model.*;
 import feign.codec.ErrorDecoder;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.exception.VelocityException;
-import org.modelmapper.ModelMapper;
+import org.modelmapper.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ui.velocity.VelocityEngineFactory;
@@ -40,16 +35,54 @@ public class AppConfig {
     @Bean
     public ModelMapper modelMapper(){
         ModelMapper modelMapper = new ModelMapper();
-        modelMapper.typeMap(Order.class, OrderDTO.class);
+
+        modelMapper.typeMap(OrderDTO.class, Order.class).setPostConverter(context -> {
+            OrderDTO s = context.getSource();
+            Order d = context.getDestination();
+            if(s.getShippingAddress() instanceof PersonAddressDTO){
+                d.setShippingAddress(modelMapper.map(s.getShippingAddress(), OrderPersonAddress.class));
+            }
+            if(s.getShippingAddress() instanceof CompanyAddressDTO){
+                d.setShippingAddress(modelMapper.map(s.getShippingAddress(), OrderCompanyAddress.class));
+            }
+            if(s.getReceiptAddress() instanceof PersonAddressDTO){
+                d.setReceiptAddress(modelMapper.map(s.getReceiptAddress(), OrderPersonAddress.class));
+            }
+            if(s.getReceiptAddress() instanceof CompanyAddressDTO){
+                d.setReceiptAddress(modelMapper.map(s.getReceiptAddress(), OrderCompanyAddress.class));
+            }
+            return d;
+        });
+
+        modelMapper.typeMap(Order.class, OrderGetDetailsDTO.class).setPostConverter(context -> {
+            Order s = context.getSource();
+            OrderGetDetailsDTO d = context.getDestination();
+            if(s.getShippingAddress() instanceof OrderPersonAddress){
+                d.setShippingAddress(modelMapper.map(s.getShippingAddress(), PersonAddressDTO.class));
+            }
+            if(s.getShippingAddress() instanceof OrderCompanyAddress){
+                d.setShippingAddress(modelMapper.map(s.getShippingAddress(), CompanyAddressDTO.class));
+            }
+            if(s.getReceiptAddress() instanceof OrderPersonAddress){
+                d.setReceiptAddress(modelMapper.map(s.getReceiptAddress(), PersonAddressDTO.class));
+            }
+            if(s.getReceiptAddress() instanceof OrderCompanyAddress){
+                d.setReceiptAddress(modelMapper.map(s.getReceiptAddress(), CompanyAddressDTO.class));
+            }
+            return d;
+        });
+
         modelMapper.typeMap(OrderEntry.class, OrderEntryDTO.class)
                 .addMapping(OrderEntry::getProductSlug, OrderEntryDTO::setSlug)
                 .addMapping(OrderEntry::getProductName, OrderEntryDTO::setName);
         modelMapper.typeMap(OrderEntryDTO.class, OrderEntry.class)
                 .addMapping(OrderEntryDTO::getSlug, OrderEntry::setProductSlug)
                 .addMapping(OrderEntryDTO::getName, OrderEntry::setProductName);
-        modelMapper.typeMap(OrderAddress.class, AddressDTO.class);
         modelMapper.typeMap(OrderEntryDTO.class, StockDTO.class)
                 .addMapping(OrderEntryDTO::getSlug, StockDTO::setProductSlug);
+
+        modelMapper.typeMap(CompanyAddressDTO.class, OrderCompanyAddress.class);
+        modelMapper.typeMap(PersonAddressDTO.class, OrderPersonAddress.class);
 
         return modelMapper;
     }

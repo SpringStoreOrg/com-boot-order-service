@@ -6,10 +6,9 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import com.boot.order.model.Email;
-import com.boot.order.model.Order;
-import com.boot.order.model.OrderAddress;
+import com.boot.order.model.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +24,7 @@ import org.springframework.ui.velocity.VelocityEngineUtils;
 public class EmailService {
 
 	private static final String ORDER_EMAIL_TEMPLATE = "/templates/order-email-template.vm";
-	private static final String ADDRESS_TEMPLATE = "%s %s<br>%s<br>Strada %s, %s<br>%s, %s, %s";
+	private static final String ADDRESS_TEMPLATE = "%s<br>%s<br>Strada %s, %s<br>%s, %s, %s";
 
 	@Autowired
 	JavaMailSender emailSender;
@@ -77,8 +76,17 @@ public class EmailService {
 
 	private String getAddressString(Order order) {
 		OrderAddress address = order.getShippingAddress();
-		return String.format(ADDRESS_TEMPLATE, address.getFirstName(), address.getLastName(),
-				address.getPhoneNumber(), address.getStreet(), address.getPostalCode(),
-				address.getCity(), address.getCounty(), address.getCountry());
+		if (address instanceof OrderPersonAddress) {
+			return String.format(ADDRESS_TEMPLATE, ((OrderPersonAddress) address).getFirstName() + " " + ((OrderPersonAddress) address).getLastName(),
+					address.getPhoneNumber(), address.getStreet(), address.getPostalCode(),
+					address.getCity(), address.getCounty(), address.getCountry());
+		}
+		if (address instanceof OrderCompanyAddress) {
+			return String.format(ADDRESS_TEMPLATE, ((OrderCompanyAddress) address).getCompanyName(),
+					address.getPhoneNumber(), address.getStreet(), address.getPostalCode(),
+					address.getCity(), address.getCounty(), address.getCountry());
+		}
+
+		return StringUtils.EMPTY;
 	}
 }

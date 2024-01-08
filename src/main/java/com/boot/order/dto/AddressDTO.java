@@ -1,22 +1,32 @@
 package com.boot.order.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CompanyAddressDTO.class, name = "company"),
+        @JsonSubTypes.Type(value = PersonAddressDTO.class, name = "person")
+})
 @Data
+@Accessors(chain = true)
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AddressDTO {
-    @Size(min = 3, message = "Min First name size is 3 characters!")
-    @Size(max = 30, message = "Max First name size is 30 characters!")
-    @NotNull
-    private String firstName;
-    @Size(min = 3, message = "Min Last name size is 3 characters!")
-    @Size(max = 30, message = "Max Last name size is 30 characters!")
-    @NotNull
-    private String lastName;
     @Pattern(regexp="^(?=[07]{2})(?=\\d{10}).*", message = "Invalid Phone Number!")
     @NotNull
     private String phoneNumber;

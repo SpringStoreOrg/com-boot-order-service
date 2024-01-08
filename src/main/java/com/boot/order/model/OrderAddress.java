@@ -4,19 +4,16 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+
 @Data
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Entity
 @Table(name = "order_address")
+@DiscriminatorColumn(name = "type")
 public class OrderAddress {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-
-    @Column
-    private String firstName;
-
-    @Column
-    private String lastName;
 
     @Column
     private String phoneNumber;

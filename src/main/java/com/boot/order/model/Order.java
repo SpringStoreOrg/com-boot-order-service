@@ -77,6 +77,9 @@ public class Order implements Serializable {
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY,  cascade = { CascadeType.ALL} )
 	private List<OrderEntry> entries;
 
+	@OneToMany
+	private List<OrderAddress> addresses;
+
 	@PrePersist
 	public void create(){
 		this.createdOn = LocalDateTime.now();
