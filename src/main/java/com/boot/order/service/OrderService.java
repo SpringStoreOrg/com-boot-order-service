@@ -201,8 +201,8 @@ public class OrderService {
         Map<String, ProductDTO> productsMap = getProductDTOS(orderOptional.get().getEntries());
         result.getEntries().forEach(item->{
             ProductDTO product = productsMap.get(item.getProductSlug());
-            if(product!=null && !product.getImages().isEmpty()){
-                    item.setProductImg(product.getImages().get(0));
+            if(product!=null){
+                    item.setProductImg(product.getThumbnail());
             }
         });
 
