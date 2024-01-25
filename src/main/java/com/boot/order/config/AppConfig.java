@@ -72,6 +72,9 @@ public class AppConfig {
             return d;
         });
 
+        modelMapper.typeMap(Order.class, AdminOrderGetDTO.class)
+                .addMapping(s->s.getShippingAddress().getRecipient(), AdminOrderGetDTO::setRecipient);
+
         modelMapper.typeMap(OrderEntry.class, OrderEntryDTO.class)
                 .addMapping(OrderEntry::getProductSlug, OrderEntryDTO::setSlug)
                 .addMapping(OrderEntry::getProductName, OrderEntryDTO::setName);

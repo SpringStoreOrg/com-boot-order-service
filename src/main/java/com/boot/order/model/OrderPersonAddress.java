@@ -14,4 +14,9 @@ public class OrderPersonAddress extends OrderAddress{
     private String firstName;
     @Column
     private String lastName;
+
+    @Override
+    public String getRecipient() {
+        return firstName + " " + lastName;
+    }
 }

@@ -16,4 +16,9 @@ public class OrderCompanyAddress extends OrderAddress{
     private String identificationNumber;
     @Column
     private String registrationNumber;
+
+    @Override
+    public String getRecipient() {
+        return companyName;
+    }
 }

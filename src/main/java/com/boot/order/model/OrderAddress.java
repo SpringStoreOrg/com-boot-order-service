@@ -1,6 +1,7 @@
 package com.boot.order.model;
 
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -39,6 +40,9 @@ public class OrderAddress {
     @Column
     private LocalDateTime createdOn;
 
+    public String getRecipient(){
+        return StringUtils.EMPTY;
+    }
 
     @PrePersist
     public void create(){

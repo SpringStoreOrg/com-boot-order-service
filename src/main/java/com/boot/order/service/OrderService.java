@@ -184,10 +184,10 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public List<OrderGetDTO> getOrders(Pageable pageable){
+    public List<AdminOrderGetDTO> getOrders(Pageable pageable){
         Page<Order> orders = orderRepository.findAll(pageable);
         return orders.stream()
-                .map(item->modelMapper.map(item, OrderGetDTO.class))
+                .map(item->modelMapper.map(item, AdminOrderGetDTO.class))
                 .collect(Collectors.toList());
     }
 

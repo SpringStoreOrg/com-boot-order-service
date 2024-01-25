@@ -76,17 +76,8 @@ public class EmailService {
 
 	private String getAddressString(Order order) {
 		OrderAddress address = order.getShippingAddress();
-		if (address instanceof OrderPersonAddress) {
-			return String.format(ADDRESS_TEMPLATE, ((OrderPersonAddress) address).getFirstName() + " " + ((OrderPersonAddress) address).getLastName(),
-					address.getPhoneNumber(), address.getStreet(), address.getPostalCode(),
-					address.getCity(), address.getCounty(), address.getCountry());
-		}
-		if (address instanceof OrderCompanyAddress) {
-			return String.format(ADDRESS_TEMPLATE, ((OrderCompanyAddress) address).getCompanyName(),
-					address.getPhoneNumber(), address.getStreet(), address.getPostalCode(),
-					address.getCity(), address.getCounty(), address.getCountry());
-		}
-
-		return StringUtils.EMPTY;
+		return String.format(ADDRESS_TEMPLATE, address.getRecipient(),
+				address.getPhoneNumber(), address.getStreet(), address.getPostalCode(),
+				address.getCity(), address.getCounty(), address.getCountry());
 	}
 }

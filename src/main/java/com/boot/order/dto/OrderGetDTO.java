@@ -15,7 +15,6 @@ import java.util.UUID;
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class OrderGetDTO {
     private UUID uuid;
     private double total;
@@ -25,8 +24,5 @@ public class OrderGetDTO {
     private LocalDateTime createdOn;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdatedOn;
-    private String courier;
-    private String trackingNumber;
-    private String trackingUrl;
     private LocalDate deliveryDate;
 }

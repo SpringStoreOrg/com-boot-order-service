@@ -1,5 +1,6 @@
 package com.boot.order.controller;
 
+import com.boot.order.dto.AdminOrderGetDTO;
 import com.boot.order.dto.OrderGetDTO;
 import com.boot.order.dto.OrderSendDTO;
 import com.boot.order.service.OrderService;
@@ -27,7 +28,7 @@ public class AdminController {
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<List<OrderGetDTO>> getOrdersByAdmin(@RequestHeader(value = "User-Id") Long userId, @PageableDefault(size = 10, direction = Sort.Direction.DESC, sort = {"createdOn"}) Pageable pageable) {
+    public ResponseEntity<List<AdminOrderGetDTO>> getOrdersByAdmin(@RequestHeader(value = "User-Id") Long userId, @PageableDefault(size = 10, direction = Sort.Direction.DESC, sort = {"createdOn"}) Pageable pageable) {
         return new ResponseEntity<>(orderService.getOrders(pageable), HttpStatus.OK);
     }
 
