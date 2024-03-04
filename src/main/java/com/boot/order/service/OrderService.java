@@ -95,6 +95,7 @@ public class OrderService {
 
         order.setEntries(newOrderEntries);
         order.setTotal(orderTotal);
+        order.setProductTotal(orderTotal);
         order.setProductCount(productCount);
         order.setDeliveryDate(addBusinessDays(LocalDate.now(), estimatedDaysToDeliver));
 
@@ -170,6 +171,8 @@ public class OrderService {
         order.setTrackingUrl(orderSent.getTrackingUrl());
         order.setCourier(orderSent.getCourier());
         order.setDeliveryDate(orderSent.getDeliveryDate());
+        order.setShippingCost(orderSent.getShippingCost());
+        order.setTotal(order.getProductTotal()+order.getShippingCost());
         order.setState(OrderState.SENT);
 
         orderRepository.save(order);

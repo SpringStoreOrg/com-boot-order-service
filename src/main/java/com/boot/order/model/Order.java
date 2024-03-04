@@ -37,6 +37,9 @@ public class Order implements Serializable {
 	private OrderState state;
 
 	@Column
+	private double productTotal;
+
+	@Column
 	private double total;
 
 	@Column
@@ -64,6 +67,9 @@ public class Order implements Serializable {
 
 	@Column
 	private LocalDate deliveryDate;
+
+	@Column
+	private double shippingCost;
 
 	@Column
 	private String notes;

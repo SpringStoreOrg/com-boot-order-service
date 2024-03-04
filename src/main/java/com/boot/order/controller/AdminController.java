@@ -2,6 +2,7 @@ package com.boot.order.controller;
 
 import com.boot.order.dto.AdminOrderGetDTO;
 import com.boot.order.dto.OrderGetDTO;
+import com.boot.order.dto.OrderGetDetailsDTO;
 import com.boot.order.dto.OrderSendDTO;
 import com.boot.order.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,12 @@ public class AdminController {
     @ResponseBody
     public ResponseEntity<List<AdminOrderGetDTO>> getOrdersByAdmin(@RequestHeader(value = "User-Id") Long userId, @PageableDefault(size = 10, direction = Sort.Direction.DESC, sort = {"createdOn"}) Pageable pageable) {
         return new ResponseEntity<>(orderService.getOrders(pageable), HttpStatus.OK);
+    }
+
+    @GetMapping("/{orderId}")
+    @ResponseBody
+    public ResponseEntity<OrderGetDetailsDTO> getOrder(@PathVariable("orderId") String orderId) {
+        return new ResponseEntity<>(orderService.getOrder(orderId), HttpStatus.OK);
     }
 
     @DeleteMapping("/{orderId}")
