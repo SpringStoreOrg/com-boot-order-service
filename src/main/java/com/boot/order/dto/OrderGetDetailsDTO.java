@@ -19,6 +19,8 @@ import java.util.UUID;
 public class OrderGetDetailsDTO{
     private UUID uuid;
     private double total;
+    private double productTotal;
+    private double shippingCost;
     private String state;
     private Integer productCount;
     private LocalDateTime createdOn;
