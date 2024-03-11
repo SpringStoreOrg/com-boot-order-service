@@ -45,8 +45,7 @@
             <column name="shipping_address_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="shipping_cost" type="bigint">
-            </column>
+            <column name="shipping_cost" type="bigint"/>
             <column name="courier" type="varchar(30)"/>
             <column name="tracking_number" type="varchar(30)"/>
             <column name="tracking_url" type="varchar(100)"/>
